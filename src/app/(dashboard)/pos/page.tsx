@@ -1,9 +1,11 @@
+import ItemsContainer from "@/components/ItemsContainer"
+
  const PosPage =()=>{
     return(
         <div className="h-screen flex">
       {/* Left */}
       <div className="w-[70%] md:w-[65%] lg:w-[75%] bg-blue-200">
-            {/* <PosPage/> */}
+            <ItemsContainer/>
 
         </div>
         {/* Right */}
