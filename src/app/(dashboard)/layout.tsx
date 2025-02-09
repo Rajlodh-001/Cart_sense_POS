@@ -1,6 +1,5 @@
 import PosPage from "./pos/page";
 
-
 export default function dashBoardLayout({
   children,
 }: Readonly<{
@@ -8,14 +7,10 @@ export default function dashBoardLayout({
 }>) {
   return (
     <div className="h-screen flex">
-        {/* Left */}
-        <div className="w-full">
-            <PosPage/>
-
-      
-
-        </div>
-
+      {/* Left */}
+      <div className="w-full">
+        <PosPage />
+      </div>
     </div>
   );
 }
