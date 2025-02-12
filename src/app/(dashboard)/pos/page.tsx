@@ -1,20 +1,17 @@
-import ItemsContainer from "@/components/ItemsContainer"
+import ItemsContainer from "@/components/ItemsContainer";
+import MiniMenuNavbar from "@/components/MenuPage";
 
- const PosPage =()=>{
-    return(
-        <div className="h-screen flex">
+const PosPage = () => {
+  return (
+    <div className="h-screen flex">
       {/* Left */}
-      <div className="w-[70%] md:w-[65%] lg:w-[75%] bg-blue-200">
-            <ItemsContainer/>
-
-        </div>
-        {/* Right */}
-        <div className="w-[30%] md:w-[35%] lg:w-[25%] bg-red-200"></div>
-    
+      <div className="sm:w-1/2 md:w-2/3 lg:w-2/3 w-1/2 bg-bgdarkgray">
+        <ItemsContainer />
+      </div>
+      {/* Right */}
+      <div className="sm:w-1/2 md:w-1/3 lg:w-1/3 w-1/2 bg-red-200"></div>
     </div>
-    )
+  );
+};
 
-
-}
-
-export default PosPage
+export default PosPage;
