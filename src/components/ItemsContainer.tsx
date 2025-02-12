@@ -1,11 +1,14 @@
-import TopContainer from "./TopContainer"
+import MenuPage from "./MenuPage"
+import MiniMenuNavbar from "./MiniMenuNavbar";
+import TopContainer from "./TopContainer";
 
 const ItemsContainer = ()=>{
 
 return(
-    <div className="h-screen w-full flex flex-col">
+    <div className="h-screen bg-slate-300 w-full flex flex-col">
         <TopContainer/>
-        sdf
+        <MiniMenuNavbar/>
+        <MenuPage/>
     </div>
 )
 }
