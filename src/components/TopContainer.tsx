@@ -28,7 +28,7 @@ const TopContainer = () => {
               T
             </button>
             <p className="px-3 pr-4 font-semibold flex ">
-              07:59 <p className="text-slate-400 px-1 font-normal">AM</p>
+              07:59 <span className="text-slate-400 px-1 font-normal">AM</span>
             </p>
           </div>
         </div>
