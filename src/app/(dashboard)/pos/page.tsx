@@ -1,5 +1,6 @@
 import ItemsContainer from "@/components/ItemsContainer";
 import MiniMenuNavbar from "@/components/MenuPage";
+import OrderContainer from "@/components/OrderContainer";
 
 const PosPage = () => {
   return (
@@ -9,7 +10,9 @@ const PosPage = () => {
         <ItemsContainer />
       </div>
       {/* Right */}
-      <div className="sm:w-1/2 md:w-1/3 lg:w-1/3 xl:w-[25%] w-1/2 xl:bg-red-500 bg-red-200"></div>
+      <div className="sm:w-1/2 md:w-1/3 lg:w-1/3 xl:w-[25%] w-1/2 xl:bg-red-500 bg-red-200">
+      <OrderContainer/>
+      </div>
     </div>
   );
 };
