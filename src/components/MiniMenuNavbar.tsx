@@ -87,12 +87,14 @@
 // export default MiniMenuNavbar;
 
 import Image from "next/image";
+// import miniMenuData from "../../lib/minMenuData"
+import { ReactElement, JSXElementConstructor, ReactNode, ReactPortal } from "react";
 
 const MiniMenuNavbar = () => {
   return (
-    <div className="w-full p-2">
+    <div className="w-full h-auto p-2">
       {/* <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2 overflow-auto"> */}
-      <div className="flex flex-row overflow-auto gap-2">
+      <div className="flex flex-row overflow-auto gap-2 scrollbar-hide flex-wrap ">
 
         
 
@@ -105,8 +107,9 @@ const MiniMenuNavbar = () => {
             <div className="text-gray-500">20 Items</div>
           </div>
         </div>
+
         <div className="flex justify-center">
-          <div className="border-blue-500 border-2 w-[140px] h-[140px] rounded-lg bg-white py-1 flex flex-col items-start p-2">
+          <div className=" border-2 w-[140px] h-[140px] rounded-lg bg-white py-1 flex flex-col items-start p-2">
             <Image className="rounded-full m-2" src="https://placehold.co/50x50/909497/000000.svg" alt="product image" height={48} width={48} />
             <div className="text-blue-500 font-medium text-lg mt-2">
               ALL Menu
@@ -115,7 +118,7 @@ const MiniMenuNavbar = () => {
           </div>
         </div>
         <div className="flex justify-center">
-          <div className="border-blue-500 border-2 w-[140px] h-[140px] rounded-lg bg-white py-1 flex flex-col items-start p-2">
+          <div className=" border-2 w-[140px] h-[140px] rounded-lg bg-white py-1 flex flex-col items-start p-2">
             <Image className="rounded-full m-2" src="https://placehold.co/50x50/909497/000000.svg" alt="product image" height={48} width={48} />
             <div className="text-blue-500 font-medium text-lg mt-2">
               ALL Menu
@@ -124,7 +127,7 @@ const MiniMenuNavbar = () => {
           </div>
         </div>
         <div className="flex justify-center">
-          <div className="border-blue-500 border-2 w-[140px] h-[140px] rounded-lg bg-white py-1 flex flex-col items-start p-2">
+          <div className=" border-2 w-[140px] h-[140px] rounded-lg bg-white py-1 flex flex-col items-start p-2">
             <Image className="rounded-full m-2" src="https://placehold.co/50x50/909497/000000.svg" alt="product image" height={48} width={48} />
             <div className="text-blue-500 font-medium text-lg mt-2">
               ALL Menu
@@ -134,7 +137,7 @@ const MiniMenuNavbar = () => {
         </div>
 
         <div className="flex justify-center">
-          <div className="border-blue-500 border-2 w-[140px] h-[140px] rounded-lg bg-white py-1 flex flex-col items-start p-2">
+          <div className="border-2 w-[140px] h-[140px] rounded-lg bg-white py-1 flex flex-col items-start p-2">
             <Image className="rounded-full m-2" src="https://placehold.co/50x50/909497/000000.svg" alt="product image" height={48} width={48} />
             <div className="text-blue-500 font-medium text-lg mt-2">
               ALL Menu
@@ -142,6 +145,19 @@ const MiniMenuNavbar = () => {
             <div className="text-gray-500">20 Items</div>
           </div>
         </div>
+
+       
+      
+
+      
+
+          
+         
+
+
+       
+       
+        
         
 
       </div>
