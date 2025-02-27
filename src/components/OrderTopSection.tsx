@@ -24,6 +24,16 @@ const OrderTopSection = () => {
         </div>
       </div>
 
+      <div className="flex flex-row justify-evenly p-2">
+        <div className="">
+            <label htmlFor="">Dine in</label>
+            
+        </div>
+        <div className="">
+          <label htmlFor="">Takeaway</label>
+          
+        </div>
+      </div>
 
     </div>
   );
