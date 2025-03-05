@@ -27,7 +27,7 @@ const OrderContainer = () => {
     <OrderTopSection />
   </div>
 
-  {/* Middle Section (Order List) Taking Maximum Height */}
+  {/* Middle Section orderlist max height */}
   <div className="flex-grow  overflow-y-scroll scrollbar-hide  ">
     <OrderItemList />
   </div>
