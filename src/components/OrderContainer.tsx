@@ -1,22 +1,44 @@
 import React from "react";
 import OrderTopSection from "./OrderTopSection";
 import OrderBottomSection from "./OrderBottomSection";
+import OrderItemList from "./OrderItemList";
 
 const OrderContainer = () => {
   return (
-    <div>
-      <div className="conatiner h-screen w-full ">
-        <div className="flex flex-col ">
-          
-          <OrderTopSection  />
-        
-         <OrderBottomSection />
-         
+   
+      // <div className="conatiner h-dvh w-full ">
+      //   <div className="grid grid-cols-1">
+      //     <div className="">
+           
+      //       <OrderTopSection />
+      //     </div>
+      //     <div className="">
 
-          
-        </div>
-      </div>
-    </div>
+      //       <OrderItemList/>
+      //     </div>
+      //     <div className="">
+      //       <OrderBottomSection />
+      //     </div>
+      //   </div>
+      // </div>
+      <div className="container h-dvh w-full flex flex-col">
+  {/* Top Section */}
+  <div className="flex-none">
+    <OrderTopSection />
+  </div>
+
+  {/* Middle Section orderlist max height */}
+  <div className="flex-grow  overflow-y-scroll scrollbar-hide  ">
+    <OrderItemList />
+  </div>
+
+  {/* Bottom Section */}
+  <div className="flex-none">
+    <OrderBottomSection />
+  </div>
+</div>
+
+    
   );
 };
 
