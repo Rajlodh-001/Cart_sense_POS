@@ -1,9 +1,10 @@
 const TopContainer = () => {
   return (
-    <div className="flex flex-row justify-between py-1 md:bg-blue-200 sm:bg-green-200 lg:bg-purple-200 xl:bg-violet-300 items-center ">
-      <div className="w-full flex flex-row items-center">
+    <div className="flex flex-row justify-between py-1 px-2 md:bg-blue-200 sm:bg-green-200 lg:bg-purple-200 xl:bg-violet-300 items-center ">
+      
+      <div className="w-full flex flex-row items-center ">
         
-        <div className="bg-white rounded-full mx-2  h-12 w-12 flex justify-between items-center">
+        <div className="bg-white rounded-full mx-1  h-12 w-12 flex justify-between items-center">
           <button className="bg-slate-200 rounded-full h-10 w-10 mx-1 font-bold">
             M
           </button>
