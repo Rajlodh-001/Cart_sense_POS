@@ -15,7 +15,6 @@ const SearchBox = () => {
         <div className="bg-gray-200 rounded-full p-2 h-18 w-18">
         <Image src="/search.png" alt="search-icon" width={18} height={18} />
         </div>
-        
       </div>
     </div>
   );
