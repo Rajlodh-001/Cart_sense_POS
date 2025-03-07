@@ -5,6 +5,15 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+
+  --primary-white-dark:#f7f7f7;
+  --primary-white-light:#ffffff;
+  --pripary-blue-dark:#2d71f8;
+  --pripary-blue-light:#f6faff;
+  --primary-red-dark:#fc4a4a;
+  --primary-red-light:#fff5f4;
+  --primary-green-dark:#1c8370;
+  --pripary-green-light:#f1fffc;
 }
 
 @media (prefers-color-scheme: dark) {
