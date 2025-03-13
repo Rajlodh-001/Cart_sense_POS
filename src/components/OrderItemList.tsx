@@ -1,6 +1,7 @@
 import React from "react";
 import Image from "next/image";
 import { ItemLists } from "../../lib/TempData";
+import edit from "../../public/icons/edit.svg"
 
 const OrderItemList = () => {
   return ItemLists.map(
@@ -33,7 +34,9 @@ const OrderItemList = () => {
               </div>
               <div className="price px-4 md:px-0">$ {item.price}</div>
               <div className="modified-detail flex flex-row justify-between items-center mt-1">
-                <div className="edit-btn cursor-pointer text-blue-500">e</div>
+                <div className="edit-btn cursor-pointer text-blue-500 bg-primary-white-light p-1.5 rounded-full">
+                  <Image className="bg-primary-white-dark rounded-full p-0.5" src={edit} height={20} width={20} alt=""/>
+                </div>
                 {/* <div className="inc-dec-btn flex flex-row items-center space-x-2">
                 <span className="cursor-pointer text-lg">-</span>
                 <p className="text-lg ">{item.quantity}</p>
