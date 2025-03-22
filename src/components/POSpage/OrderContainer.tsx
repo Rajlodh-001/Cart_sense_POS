@@ -1,7 +1,7 @@
 import React from "react";
-import OrderTopSection from "./OrderTopSection";
-import OrderBottomSection from "./OrderBottomSection";
-import OrderItemList from "./OrderItemList";
+import OrderTopSection from "./OrderContainer/OrderTopSection";
+import OrderBottomSection from "./OrderContainer/OrderBottomSection";
+import OrderItemList from "./OrderContainer/OrderItemList";
 
 const OrderContainer = () => {
   return (
@@ -17,7 +17,6 @@ const OrderContainer = () => {
   <div className="flex-grow  overflow-y-scroll scrollbar-hide  ">
     <OrderItemList />
   </div>
-
 
   <div className="flex-none">
     <OrderBottomSection />

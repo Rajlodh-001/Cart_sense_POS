@@ -1,7 +1,7 @@
 import React from "react";
 import Image from "next/image";
-import { ItemLists } from "../../lib/TempData";
-import edit from "../../public/icons/edit.svg"
+import { ItemLists } from "../../../../lib/TempData";
+import edit from "../../../../public/icons/edit.svg"
 
 const OrderItemList = () => {
   return ItemLists.map(
@@ -26,6 +26,7 @@ const OrderItemList = () => {
                 height={120}
                 width={120}
                 alt="itemImage"
+                draggable="false"
               />
             </div>
             <div className="detail flex flex-col flex-grow md:px-4">
