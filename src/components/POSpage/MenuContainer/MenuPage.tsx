@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { Menudata } from "../../lib/TempData";
+import { Menudata } from "../../../../lib/TempData";
 
 const MenuPage = () => {
   return (
@@ -47,7 +47,9 @@ const MenuPage = () => {
                   <div className="p-2 pb-1">
                 
                     <Image
-                      className="p-1 rounded-t-lg"
+                    draggable="false"
+                   
+                      className="p-1 rounded-t-lg "
                       src={item.imgSrc}
                       alt="product image"
                       height={600}

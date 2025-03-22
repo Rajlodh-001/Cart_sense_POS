@@ -1,8 +1,8 @@
 import Image from "next/image";
-import imgMenu from "../../public/icons/menu-burger.png"
-import imgCalendar from "../../public/icons/calendar-day.png"
-import imgClock from "../../public/icons/clock.svg"
-import imgPower from "../../public/icons/power.svg"
+import imgMenu from "../../../../public/icons/menu-burger.png"
+import imgCalendar from "../../../../public/icons/calendar-day.png"
+import imgClock from "../../../../public/icons/clock.svg"
+import imgPower from "../../../../public/icons/power.svg"
 import imgPowergreen from "../../public/icons/powergreen.svg"
 
 const TopContainer = () => {
