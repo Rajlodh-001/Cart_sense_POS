@@ -1,6 +1,6 @@
-import ItemsContainer from "@/components/ItemsContainer";
-import MiniMenuNavbar from "@/components/MenuPage";
-import OrderContainer from "@/components/OrderContainer";
+import ItemsContainer from "@/components/POSpage/ItemsContainer";
+import MiniMenuNavbar from "@/components/POSpage/MenuContainer/MenuPage";
+import OrderContainer from "@/components/POSpage/OrderContainer";
 
 const PosPage = () => {
   return (

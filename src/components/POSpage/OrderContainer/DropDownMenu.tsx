@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import edit from "../../public/icons/arrow-drop-down.png";
+import edit from "../../../../public/icons/arrow-drop-down.png";
 import Image from "next/image";
 
 const options = [
@@ -23,12 +23,13 @@ const DropDownMenu = () => {
           ? options.find((opt) => opt.id === selected)?.label
           : "Select Option"}
         <Image 
+        draggable="false"
           src={edit}
           alt="More"
           width={25}
         //   13
           height={25}
-          className={`ml-2  p-1.5 bg-primary-white-light rounded-full  transition-transform duration-300 ease-in ${open ? "rotate-180" : ""}`}
+          className={`ml-2  p-1.5 bg-primary-white-light rounded-full  transition-transform duration-50 ease-in ${open ? "rotate-180" : ""}`}
         />
       </button>
 
@@ -49,7 +50,7 @@ const DropDownMenu = () => {
                 value={option.id}
                 checked={selected === option.id}
                 onChange={() => setSelected(option.id)}
-                className="mr-2 "
+                className="mr-2"
               />
               {option.label}
             </li>

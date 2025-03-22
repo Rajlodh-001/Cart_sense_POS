@@ -1,4 +1,4 @@
-import { miniMenuBardata } from "../../lib/TempData";
+import { miniMenuBardata } from "../../../../lib/TempData";
 import Image from "next/image";
 
 const MenuNavbar = () => {

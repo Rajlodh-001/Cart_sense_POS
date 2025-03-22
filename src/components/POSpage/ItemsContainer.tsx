@@ -1,8 +1,8 @@
-import MenuNavbar from "./MenuNavbar";
-import MenuPage from "./MenuPage"
-import MiniMenuNavbar from "./MiniMenuNavbar";
-import TopContainer from "./TopContainer";
-import SearchBox from "./SearchBox";
+import MenuNavbar from "./MenuContainer/MenuNavbar";
+import MenuPage from "./MenuContainer/MenuPage"
+import MiniMenuNavbar from "../MiniMenuNavbar";
+import TopContainer from "./MenuContainer/TopContainer";
+import SearchBox from "./MenuContainer/SearchBox";
 
 const ItemsContainer = ()=>{
 
