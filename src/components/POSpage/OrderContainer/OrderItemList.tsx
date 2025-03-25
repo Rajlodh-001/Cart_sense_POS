@@ -2,6 +2,8 @@ import React from "react";
 import Image from "next/image";
 import { ItemLists } from "../../../../lib/TempData";
 import edit from "../../../../public/icons/edit.svg"
+import { useDispatch } from "react-redux";
+import { incrementQuantity,decrementQuantity } from "@/app/(dashboard)/pos/posSlice";
 
 const OrderItemList = () => {
   return ItemLists.map(
@@ -38,11 +40,6 @@ const OrderItemList = () => {
                 <div className="edit-btn cursor-pointer text-blue-500 bg-primary-white-light p-1.5 rounded-full">
                   <Image className="bg-primary-white-dark rounded-full p-0.5" src={edit} height={20} width={20} alt=""/>
                 </div>
-                {/* <div className="inc-dec-btn flex flex-row items-center space-x-2">
-                <span className="cursor-pointer text-lg">-</span>
-                <p className="text-lg ">{item.quantity}</p>
-                <span className="cursor-pointer text-lg">+</span>
-              </div> */}
 
                 <div className="inc-dec-btn flex items-center bg-primary-white-dark rounded-full px-2 p-0.5  space-x-2">
                   <span className="cursor-pointer text-lg  p-3 bg-primary-white-light rounded-full w-4 h-4 flex items-center justify-center hover:bg-gray-200 transition">
