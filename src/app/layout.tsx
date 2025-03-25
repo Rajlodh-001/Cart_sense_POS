@@ -4,6 +4,7 @@ import "./globals.css";
 
 import { config } from '@fortawesome/fontawesome-svg-core'
 import '@fortawesome/fontawesome-svg-core/styles.css'
+import { StoreProvider } from "@/store/StoreProvider";
 config.autoAddCss = false
 
 
@@ -28,6 +29,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+
+    <StoreProvider>
     <html lang="en">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
@@ -35,5 +38,6 @@ export default function RootLayout({
         {children}
       </body>
     </html>
+    </StoreProvider>
   );
 }
