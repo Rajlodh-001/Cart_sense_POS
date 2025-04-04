@@ -1,11 +1,11 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
+import { RootState } from "@/store/store";
 interface CartItem {
   id: number;
   name: string;
   imgSrc: string;
   itemType: string;
-  price: String;
+  price: number;
   quantity: number;
 }
 
@@ -41,7 +41,7 @@ const cartSlice = createSlice({
       try {
         if (item) item.quantity += 1;
       } catch (err) {
-        throw new Error("Failed in some way", { cause: err });
+        throw new Error("ERROR : ", { cause: err });
       }
     },
 
@@ -53,8 +53,15 @@ const cartSlice = createSlice({
           state.items = state.items.filter((item) => item.id !== action.payload);
         }
       },
+     
   },
 });
+
+export const selectTotalQuantity = (state: RootState) =>
+  state.cart.items.reduce((total: number, item: { quantity: number; }) => total + item.quantity, 0);
+
+export const selectTotalPrice = (state: RootState) =>
+  state.cart.items.reduce((total :number, item: { price: number; quantity: number; }) => total + Number(item.price) * item.quantity, 0);
 
 export const { addToCart, removeFromCart,incrementQuantity,decrementQuantity} = cartSlice.actions;
 export default cartSlice.reducer;

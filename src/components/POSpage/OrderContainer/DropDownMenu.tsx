@@ -17,7 +17,7 @@ const DropDownMenu = () => {
     <div className=" relative inline-block text-left w-46 ">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full px-2 py-1 text-gray-700 bg-gray-200 rounded-full "
+        className="flex items-center justify-between w-full px-2 py-1 text-gray-700 bg-gray-200 no rounded-full "
       >
         {selected !== null
           ? options.find((opt) => opt.id === selected)?.label
