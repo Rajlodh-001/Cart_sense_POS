@@ -1,10 +1,8 @@
-"use client"
+"use client";
 
 import Image from "next/image";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  addToCart,
-} from "@/app/(dashboard)/pos/posSlice";
+import { addToCart } from "@/app/(dashboard)/pos/posSlice";
 import { Menudata } from "../../../../lib/TempData";
 import { RootState } from "@/store/store";
 
@@ -12,6 +10,35 @@ const MenuPage = () => {
   const dispatch = useDispatch();
   const cart = useSelector((state: RootState) => state.cart.items);
 
+  const productData = Menudata;
+  // console.log(productData);
+
+  function selectMenu() {}
+
+  function srarchMenu() {}
+
+  const select = "bread";
+
+  const selectData = productData.filter((item) => {
+    //  console.log(item.itemType.toLowerCase())
+
+    return select.toLowerCase() === ""
+      ? Menudata
+      : item.itemType.toLowerCase().includes(select);
+  });
+  console.log(selectData);
+  // const word = "Ch";
+  const search = "ch";
+
+  // const search= word.toLowerCase();
+  // console.log(search)
+  const searchData = selectData.filter((item) => {
+    return search.toLowerCase() === ""
+      ? selectData
+      : item.name.toLowerCase().includes(search);
+  });
+
+  console.log(searchData);
   // const getCartItem = (id: number) => cart.find((item) => item.id === id);
   return (
     <>
@@ -24,15 +51,14 @@ const MenuPage = () => {
                 name: string;
                 imgSrc: string;
                 itemType: string;
-                price: string;
+                price: number;
               },
               index
             ) => (
               <div
                 className=" bg-blue-200 rounded-lg select-none"
-                onClick={() => dispatch(addToCart({... item,quantity:1}))}
+                onClick={() => dispatch(addToCart({ ...item, quantity: 1 }))}
                 key={index}
-                
               >
                 <div className="flex flex-col">
                   <div className="p-2 pb-1">

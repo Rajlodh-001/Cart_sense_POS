@@ -1,4 +1,4 @@
-"use client"
+"use client";
 
 import { Store } from "@reduxjs/toolkit";
 import { Children } from "react";

@@ -1,7 +1,15 @@
+"use client"
 import React from "react";
 import Image from "next/image";
+import { useSelector } from "react-redux";
+// import { selectTotalPrice, selectTotalQuantity } from "../../../app/(dashboard)/pos/posSlice";
+import { selectTotalPrice ,selectTotalQuantity} from "@/app/(dashboard)/pos/posSlice";
+import { RootState } from "@/store/store";
 
 const OrderBottomSection = () => {
+
+  // const totalQuantity = useSelector(selectTotalQuantity);
+  const totalPrice = useSelector(selectTotalPrice);
   return (
     
     // <div className="h-full w-full bg-gray-100">
@@ -108,7 +116,7 @@ const OrderBottomSection = () => {
         <span>Total</span>
         <span>$</span>
       </div>
-      <span>2.93</span>
+      <span>{totalPrice}</span>
     </div>
   </div>
   {/* <div className="max-w-full mx-auto flex justify-center ">
