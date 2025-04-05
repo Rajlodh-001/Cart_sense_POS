@@ -17,4 +17,6 @@ const PosPage = () => {
   );
 };
 
+
+// w-screen h-screen absolute left-0 top-0 bg-black bg-opacity-60 z-50 flex items-center justify-center
 export default PosPage;

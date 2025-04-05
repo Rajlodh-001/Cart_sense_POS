@@ -3,7 +3,7 @@ import Image from "next/image";
 
 const MenuNavbar = () => {
   return (
-    <div className="w-full-[2] m-2 mb-0 bg-white p-2 rounded-md  md:overflow-visible lg:overflow-visible 2xl:overflow-visible sm:overflow-x-auto scrollbar-hide">
+    <div className="w-full-[2] m-2 mb-0 bg-white p-1.5 rounded-lg  md:overflow-visible lg:overflow-visible 2xl:overflow-visible sm:overflow-x-auto scrollbar-hide">
       <div className="flex overflow-x-auto  gap-2 sm:grid  sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-8  ">
         {miniMenuBardata?.map(
           (
