@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Image from "next/image";
 import { ItemLists } from "../../../../lib/TempData";
 import edit from "../../../../public/icons/edit.svg";
@@ -12,7 +12,12 @@ import {
 } from "@/app/(dashboard)/pos/posSlice";
 import { RootState } from "@/store/store";
 
+
+
+
 const OrderItemList = () => {
+
+  const [open,setOpen] =useState(false);
   const items = useSelector((state: RootState) => state.cart.items);
   const dispatch = useDispatch();
 
@@ -97,7 +102,8 @@ const OrderItemList = () => {
                 <div className="price px-4 md:px-0">$ {item.price}</div>
 
                 <div className="modified-detail flex flex-row justify-between items-center mt-1">
-                  <div className="edit-btn cursor-pointer text-blue-500 bg-primary-white-light p-1.5 rounded-full">
+                  <div className="edit-btn cursor-pointer text-blue-500 bg-primary-white-light p-1.5 rounded-full" onClick={() => setOpen(false)}>
+                    
                     <Image
                       className="bg-primary-white-dark rounded-full p-0.5"
                       src={edit}
@@ -106,6 +112,7 @@ const OrderItemList = () => {
                       alt="Edit"
                     />
                   </div>
+                  
 
                   <div className="inc-dec-btn flex items-center bg-primary-white-dark rounded-full px-2 p-0.5 space-x-2">
                     <span
