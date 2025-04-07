@@ -86,12 +86,12 @@ const OrderBottomSection = () => {
     // </div>
 
     <div className="h-full w-full bg-gray-100 rounded-t-lg shadow-lg">
-  <div className="p-2">
+  <div className="p-2 pb-1">
   
     <div className="flex flex-row justify-between ">
       <div className="w-[70%] flex justify-between text-sm font-semibold">
         <span >SubTotal</span>
-        <span className="text-base font-normal">$</span>
+        <span className="text-base font-normal">₹</span>
       </div>
       <span>2.43</span>
     </div>
@@ -100,7 +100,7 @@ const OrderBottomSection = () => {
     <div className="flex flex-row justify-between">
       <div className="w-[70%] flex justify-between text-sm font-semibold">
         <span>Tax</span>
-        <span className="text-base font-normal">$</span>
+        <span className="text-base font-normal">₹</span>
       </div>
       <span>0.50</span>
     </div>
@@ -114,9 +114,9 @@ const OrderBottomSection = () => {
     <div className="flex flex-row justify-between py-1 font-bold">
       <div className="w-[70%] flex justify-between text-lg">
         <span>Total</span>
-        <span>$</span>
+        <span>₹</span>
       </div>
-      <span>{totalPrice}</span>
+      <span>{totalPrice.toFixed(2)}</span>
     </div>
   </div>
   {/* <div className="max-w-full mx-auto flex justify-center ">
@@ -143,11 +143,13 @@ const OrderBottomSection = () => {
         Apply Coupon
       </button>
     </div>
+
+    
   </div>
 
   {/* Checkout Button */}
-  <div className="text-center ">
-    <button className="w-full bg-primary-blue-dark  text-white py-3  hover:bg-blue-600 transition">
+  <div className="text-center px-2 pb-1 ">
+    <button className="w-full bg-primary-blue-dark  text-white py-3  hover:bg-blue-600 rounded-lg transition">
       Checkout
     </button>
   </div>

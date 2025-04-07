@@ -43,7 +43,7 @@ const MenuPage = () => {
   return (
     <>
       <div className="w-full-[2] m-2 h-screen scrollbar-hide overflow-scroll">
-        <div className="p-1 grid bg-bgdarkgray rounded-md xl:grid-cols-5  lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-1.5 ">
+        <div className="p-1 grid bg-bgdarkgray rounded-md  xl:grid-cols-5  lg:grid-cols-4 md:grid-cols-3 sm:grid-cols-2 grid-cols-1 gap-1.5 ">
           {Menudata.map(
             (
               item: {
