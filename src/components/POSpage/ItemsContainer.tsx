@@ -1,8 +1,11 @@
+
+
 import MenuNavbar from "./MenuContainer/MenuNavbar";
 import MenuPage from "./MenuContainer/MenuPage"
 import MiniMenuNavbar from "../MiniMenuNavbar";
 import TopContainer from "./MenuContainer/TopContainer";
 import SearchBox from "./MenuContainer/SearchBox";
+import { categories } from "../../../lib/TempData";
 
 const ItemsContainer = ()=>{
 
@@ -18,3 +21,5 @@ return(
 }
 
 export default ItemsContainer
+
+

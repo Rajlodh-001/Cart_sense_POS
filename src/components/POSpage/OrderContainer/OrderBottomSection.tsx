@@ -3,13 +3,39 @@ import React from "react";
 import Image from "next/image";
 import { useSelector } from "react-redux";
 // import { selectTotalPrice, selectTotalQuantity } from "../../../app/(dashboard)/pos/posSlice";
-import { selectTotalPrice ,selectTotalQuantity} from "@/app/(dashboard)/pos/posSlice";
+import { cartHasItems, selectTotalPrice ,selectTotalQuantity} from "@/app/(dashboard)/pos/posSlice";
 import { RootState } from "@/store/store";
+import PaymentModal from "@/components/placeOrderComponent/PaymentModal";
+import { useState } from "react";
+
+
 
 const OrderBottomSection = () => {
 
   // const totalQuantity = useSelector(selectTotalQuantity);
   const totalPrice = useSelector(selectTotalPrice);
+
+
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const hasItems = useSelector(cartHasItems);
+
+const handlePaymentComplete = (details: any) => {
+  console.log("Payment Success:", details);
+  setShowPaymentModal(false);
+  // Add logic to clear cart, save order to DB, print receipt, etc.
+};
+
+console.log("this is cartHasItems",hasItems)
+console.log("this is cartHasItems",showPaymentModal)
+
+
+const handlepaymentProcess =()=>{
+if (hasItems){
+  setShowPaymentModal(true)
+}
+} 
+
+
   return (
     
     // <div className="h-full w-full bg-gray-100">
@@ -148,11 +174,28 @@ const OrderBottomSection = () => {
   </div>
 
   {/* Checkout Button */}
-  <div className="text-center px-2 pb-1 ">
+  {/* <div className="text-center px-2 pb-1 ">
     <button className="w-full bg-primary-blue-dark  text-white py-3  hover:bg-blue-600 rounded-lg transition">
       Checkout
     </button>
-  </div>
+  </div> */}
+
+  <button 
+      // onClick={() => setShowPaymentModal(true)} // <--- TRIGGER MODAL
+      onClick={handlepaymentProcess}
+      className="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl..."
+    >
+      Proceed to Payment
+    </button>
+
+    {/* RENDER MODAL CONDITIONALLY */}
+    {showPaymentModal && (
+      <PaymentModal 
+        totalAmount={128.50} // Pass your real calculated total here
+        onClose={() => setShowPaymentModal(false)}
+        onConfirm={handlePaymentComplete}
+      />
+    )}
 </div>
 
   );

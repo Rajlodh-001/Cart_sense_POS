@@ -11,6 +11,8 @@ const TopContainer = () => {
       
       <div className="w-full flex flex-row items-center ">
         
+
+        {/* thsi is the menu */}
         <div className="bg-white rounded-full mx-1  h-12 w-12 flex justify-between items-center">
           <button className="bg-slate-200 rounded-full h-10 w-10 mx-1 font-bold flex justify-center items-center">
             

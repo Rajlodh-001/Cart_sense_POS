@@ -4,6 +4,19 @@ import edit from "../../public/icons/edit.svg";
 import Image from "next/image";
 import DropDownMenu from "./DropDownMenu";
 
+const options = [
+  { id: 1, label: "Dine in" },
+  { id: 2, label: "Takeaway" },
+  { id: 3, label: "Timed order" },
+];
+
+
+
+const options2 = [
+  { id: 1, label: "Table 1 " },
+  { id: 2, label: "Table 2" },
+  { id: 3, label: "Table 3" },
+];
 
 const OrderTopSection = () => {
 
@@ -32,11 +45,11 @@ const OrderTopSection = () => {
         {/* <div className="">
           <label htmlFor="">Dine in</label>
         </div> */}
+  
+        <DropDownMenu options ={options}/>
 
-        <DropDownMenu/>
-
-        <DropDownMenu/>
-        
+        <DropDownMenu options ={options2}/>
+         
       </div>
     </div>
   );
