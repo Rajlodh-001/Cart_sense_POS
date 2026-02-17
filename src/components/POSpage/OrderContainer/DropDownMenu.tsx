@@ -3,13 +3,13 @@ import React, { useState } from "react";
 import edit from "../../../../public/icons/arrow-drop-down.png";
 import Image from "next/image";
 
-const options = [
-  { id: 1, label: "Dine in" },
-  { id: 2, label: "Takeaway" },
-  { id: 3, label: "Timed order" },
-];
+// const options = [
+//   { id: 1, label: "Dine in" },
+//   { id: 2, label: "Takeaway" },
+//   { id: 3, label: "Timed order" },
+// ];
 
-const DropDownMenu = () => {
+const DropDownMenu = ({options}:{options:any[]}) => {
   const [open, setOpen] = useState(false);
   const [selected, setSelected] = useState<number | null>(null);
 

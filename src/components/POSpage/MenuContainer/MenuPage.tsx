@@ -26,7 +26,7 @@ const MenuPage = () => {
       ? Menudata
       : item.itemType.toLowerCase().includes(select);
   });
-  console.log(selectData);
+  // console.log(selectData);
   // const word = "Ch";
   const search = "ch";
 
@@ -38,7 +38,7 @@ const MenuPage = () => {
       : item.name.toLowerCase().includes(search);
   });
 
-  console.log(searchData);
+  // console.log(searchData);
   // const getCartItem = (id: number) => cart.find((item) => item.id === id);
   return (
     <>

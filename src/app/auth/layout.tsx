@@ -1,6 +1,6 @@
-import PosPage from "./pos/page";
 
-export default function dashBoardLayout({
+
+export default function AuthLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
@@ -10,7 +10,7 @@ export default function dashBoardLayout({
       {/* Left */}
       <div className="w-full">
         {children}
-        {/* <PosPage /> */}
+        
       </div>
     </div>
   );
