@@ -16,6 +16,8 @@ import TablesView from "./TablesView";
 import HistoryView from "./HistoryView";
 import BillingQueue from "./BillingQueue";
 import PlaceOrderView from "./PlaceOrderView";
+// import PosPage from "@/app/(dashboard)/pos/page";
+import POSPage from "./posComp/POSPage";
 
 // --- MOCK DATA ---
 // const INITIAL_ORDERS = [
@@ -47,7 +49,7 @@ const PlaceorderContainer = () => {
       {/* MAIN CONTENT AREA */}
       <div className="flex-1 flex flex-col h-full min-w-0 transition-all">
         {/* === VIEW 1: BILLING QUEUE (The Main Dashboard) === */}
-        {activeTab === "place-order" && <PlaceOrderView />}
+        {activeTab === "place-order" && <POSPage />}
 
         {activeTab === "billing" && <BillingQueue />}
 
