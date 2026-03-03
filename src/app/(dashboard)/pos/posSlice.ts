@@ -1,7 +1,9 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 import { RootState } from "@/store/store";
-interface CartItem {
-  id: number;
+
+// Types
+export interface CartItem {
+  id: string | number;
   name: string;
   imgSrc: string;
   itemType: string;
@@ -9,11 +11,11 @@ interface CartItem {
   quantity: number;
 }
 
-interface cartState {
+interface CartState {
   items: CartItem[];
 }
 
-const initialState: cartState = {
+const initialState: CartState = {
   items: [],
 };
 
@@ -31,20 +33,14 @@ const cartSlice = createSlice({
         state.items.push({ ...action.payload, quantity: 1 });
       }
     },
-    removeFromCart: (state, action: PayloadAction<number>) => {
+    removeFromCart: (state, action: PayloadAction<string | number>) => {
       state.items = state.items.filter((item) => item.id !== action.payload);
     },
-
-    incrementQuantity: (state, action: PayloadAction<number>) => {
+    incrementQuantity: (state, action: PayloadAction<string | number>) => {
       const item = state.items.find((item) => item.id === action.payload);
-      try {
-        if (item) item.quantity += 1;
-      } catch (err) {
-        throw new Error("ERROR : ", { cause: err });
-      }
+      if (item) item.quantity += 1;
     },
-
-    decrementQuantity: (state, action: PayloadAction<number>) => {
+    decrementQuantity: (state, action: PayloadAction<string | number>) => {
       const item = state.items.find((item) => item.id === action.payload);
       if (item && item.quantity > 1) {
         item.quantity -= 1;
@@ -52,12 +48,14 @@ const cartSlice = createSlice({
         state.items = state.items.filter((item) => item.id !== action.payload);
       }
     },
-
-    editItemQuantity: (state, action: PayloadAction<number>) => {
-      const item = state.items.find((item) => item.id === action.payload);
-      // if (item && item.quantity > 1) {
-      //   item.quantity -= 1;
-      // }
+    editItemQuantity: (
+      state,
+      action: PayloadAction<{ id: string | number; quantity: number }>,
+    ) => {
+      const item = state.items.find((item) => item.id === action.payload.id);
+      if (item) {
+        item.quantity = action.payload.quantity;
+      }
     },
   },
 });
@@ -77,16 +75,15 @@ export const selectTotalPrice = (state: RootState) =>
     0,
   );
 
-// export const selectSingleItem = (state: RootState) =>
-//   state.cart.items.find((item) => item.id === action.payload);;
-
-export const selectSingleItem = (itemId: number) => (state: RootState) =>
-  state.cart.items.find((item) => item.id === itemId);
+export const selectSingleItem =
+  (itemId: string | number) => (state: RootState) =>
+    state.cart.items.find((item) => item.id === itemId);
 
 export const {
   addToCart,
   removeFromCart,
   incrementQuantity,
   decrementQuantity,
+  editItemQuantity,
 } = cartSlice.actions;
 export default cartSlice.reducer;
