@@ -1,22 +1,24 @@
-import ItemsContainer from "@/components/POSpage/ItemsContainer";
-import MiniMenuNavbar from "@/components/POSpage/MenuContainer/MenuPage";
-import OrderContainer from "@/components/POSpage/OrderContainer";
+"use client";
+
+import ItemsContainer from "@/components/pos/ItemsContainer";
+import OrderContainer from "@/components/pos/OrderContainer";
 
 const PosPage = () => {
   return (
-    <div className="h-screen flex">
-      {/* Left */}
-      <div className="sm:w-1/2 md:w-3/5 lg:w-2/3 xl:w-[75%] w-1/2 bg-bgdarkgray">
+    <div className="min-h-screen md:h-screen w-full flex flex-col md:flex-row bg-[#f0f2f5] overflow-x-hidden">
+      {/* Left — Menu (Top on Mobile, Left on Tablets/Desktop) */}
+      <div className="w-full md:w-[60%] xl:w-[70%] 2xl:w-[75%] flex-none md:flex-1 bg-bgdarkgray overflow-hidden">
         <ItemsContainer />
       </div>
-      {/* Right */}
-      <div className="sm:w-1/2 md:w-2/5 lg:w-1/3 xl:w-[25%] w-1/2 xl:bg-red-500 ">
-      <OrderContainer/>
+      
+      {/* Right — Order (Bottom on Mobile, Right on Tablets/Desktop) */}
+      <div className="w-full md:w-[40%] xl:w-[30%] 2xl:w-[25%] flex-none border-t md:border-t-0 md:border-l border-gray-200 bg-white shadow-2xl md:shadow-none z-10">
+        <div className="h-[70vh] md:h-full">
+          <OrderContainer />
+        </div>
       </div>
     </div>
   );
 };
 
-
-// w-screen h-screen absolute left-0 top-0 bg-black bg-opacity-60 z-50 flex items-center justify-center
 export default PosPage;

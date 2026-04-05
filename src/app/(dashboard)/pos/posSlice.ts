@@ -9,14 +9,33 @@ export interface CartItem {
   itemType: string;
   price: number;
   quantity: number;
+  note: string;
+  modifiers?: string[];
+  availableModifiers?: string[];
+}
+
+export type OrderType = "dine-in" | "take-away" | "timed-order";
+
+export interface OrderInfo {
+  orderType: OrderType;
+  tableId: string | null;
+  capacity: number | null;
+  customerName: string;
 }
 
 interface CartState {
   items: CartItem[];
+  orderInfo: OrderInfo;
 }
 
 const initialState: CartState = {
   items: [],
+  orderInfo: {
+    orderType: "take-away",
+    tableId: null,
+    capacity: null,
+    customerName: "",
+  },
 };
 
 const cartSlice = createSlice({
@@ -30,7 +49,13 @@ const cartSlice = createSlice({
       if (itemIndex >= 0) {
         state.items[itemIndex].quantity += 1;
       } else {
-        state.items.push({ ...action.payload, quantity: 1 });
+        state.items.push({
+          ...action.payload,
+          quantity: 1,
+          note: action.payload.note || "",
+          modifiers: action.payload.modifiers || [],
+          availableModifiers: action.payload.availableModifiers || [],
+        });
       }
     },
     removeFromCart: (state, action: PayloadAction<string | number>) => {
@@ -57,6 +82,43 @@ const cartSlice = createSlice({
         item.quantity = action.payload.quantity;
       }
     },
+    setItemNote: (
+      state,
+      action: PayloadAction<{ id: string | number; note: string }>,
+    ) => {
+      const item = state.items.find((item) => item.id === action.payload.id);
+      if (item) {
+        item.note = action.payload.note;
+      }
+    },
+    setItemModifiers: (
+      state,
+      action: PayloadAction<{ id: string | number; modifiers: string[] }>,
+    ) => {
+      const item = state.items.find((item) => item.id === action.payload.id);
+      if (item) {
+        item.modifiers = action.payload.modifiers;
+      }
+    },
+
+    // ─── Order Info Actions ───
+    setOrderType: (state, action: PayloadAction<OrderType>) => {
+      state.orderInfo.orderType = action.payload;
+      // Clear table if not dine-in
+      if (action.payload !== "dine-in") {
+        state.orderInfo.tableId = null;
+      }
+    },
+    setTableId: (state, action: PayloadAction<string | null>) => {
+      state.orderInfo.tableId = action.payload;
+    },
+    setCustomerName: (state, action: PayloadAction<string>) => {
+      state.orderInfo.customerName = action.payload;
+    },
+    clearCart: (state) => {
+      state.items = [];
+      state.orderInfo.customerName = "";
+    },
   },
 });
 
@@ -79,11 +141,19 @@ export const selectSingleItem =
   (itemId: string | number) => (state: RootState) =>
     state.cart.items.find((item) => item.id === itemId);
 
+export const selectOrderInfo = (state: RootState) => state.cart.orderInfo;
+
 export const {
   addToCart,
   removeFromCart,
   incrementQuantity,
   decrementQuantity,
   editItemQuantity,
+  setItemNote,
+  setItemModifiers,
+  setOrderType,
+  setTableId,
+  setCustomerName,
+  clearCart,
 } = cartSlice.actions;
 export default cartSlice.reducer;

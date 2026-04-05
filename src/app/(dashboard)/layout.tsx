@@ -1,17 +1,14 @@
-import PosPage from "./pos/page";
+"use client";
 
-export default function dashBoardLayout({
+export default function DashBoardLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
   return (
-    <div className="h-screen flex">
-      {/* Left */}
-      <div className="w-full">
-        {children}
-        {/* <PosPage /> */}
-      </div>
+    <div className="h-screen w-full flex bg-[#F8F9FB] overflow-hidden">
+      {/* Main Content Area - Modules will handle their own TopBars */}
+      <main className="flex-1 flex overflow-hidden relative">{children}</main>
     </div>
   );
 }
