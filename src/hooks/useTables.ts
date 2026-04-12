@@ -12,7 +12,12 @@ export interface Table {
     name: string;
   };
   status: "AVAILABLE" | "OCCUPIED" | "RESERVED" | "DIRTY";
-  orders?: { id: string; orderTime: string; customer?: { name: string } }[];
+  orders?: {
+    id: string;
+    orderTime: string;
+    customer?: { name: string };
+    items?: { name: string; quantity: number; status: string }[];
+  }[];
   reservations?: { id: string; customerName: string; startTime: string }[];
 }
 
@@ -23,5 +28,6 @@ export function useTables() {
       const response = await axiosInstance.get<Table[]>("/tables");
       return response.data;
     },
+    refetchInterval: 10000,
   });
 }

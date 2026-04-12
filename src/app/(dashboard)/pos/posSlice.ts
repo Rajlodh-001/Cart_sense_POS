@@ -3,6 +3,7 @@ import { RootState } from "@/store/store";
 
 // Types
 export interface CartItem {
+  description: string;
   id: string | number;
   name: string;
   imgSrc: string;

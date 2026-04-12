@@ -2,37 +2,83 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-
-  --primary-white-dark:#f7f7f7;
-  --primary-white-light:#ffffff;
-  --pripary-blue-dark:#2d71f8;
-  --pripary-blue-light:#f6faff;
-  --primary-red-dark:#fc4a4a;
-  --primary-red-light:#fff5f4;
-  --primary-green-dark:#1c8370;
-  --pripary-green-light:#f1fffc;
-}
-
-@media (prefers-color-scheme: dark) {
+@layer base {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+
+    --primary-blue: #2D71F8;
+    --primary-blue-soft: #f6faff;
+    
+    --success-green: #1C8370;
+    --success-green-soft: #f1fffc;
+    
+    --danger-red: #FC4A4A;
+    --danger-red-soft: #fff5f4;
+
+    --border: #E5E7EB;
+    --input: #ffffff;
+    --ring: #2D71F8;
+    
+    --font-urbanist: "Urbanist", sans-serif;
+  }
+
+  .theme-pos {
+    --primary: 221.2 93.2% 57.5%; /* Royal Blue #2D71F8 */
+    --primary-foreground: 210 40% 98%;
+  }
+
+  .theme-admin {
+    --primary: 222.2 47.4% 11.2%; /* Slate-900 #0F172A */
+    --primary-foreground: 210 40% 98%;
+  }
+
+  body {
+    @apply antialiased text-gray-900;
+    font-family: var(--font-urbanist), sans-serif;
+    background-color: #F8F9FB;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-black tracking-tight;
+  }
+
+  /* Global Input Fix for Opera/Autofill Visibility */
+  input, select, textarea {
+    @apply bg-white border-gray-100 transition-all duration-200 outline-none !important;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus,
+  input:-webkit-autofill:active {
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    -webkit-text-fill-color: #111827 !important;
   }
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
-}
+@layer components {
+  .shadow-premium {
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.04);
+  }
 
-@keyframes scan-line {
-  0% { top: 0; }
-  50% { top: 100%; }
-  100% { top: 0; }
+  /* Components */
+  .btn-pill {
+    @apply rounded-full px-8 py-3.5 font-black uppercase tracking-widest text-[10px] transition-all active:scale-[0.98] shadow-sm hover:shadow-md;
+  }
+  
+  .badge-soft {
+    @apply px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest;
+  }
+  
+  .card-premium {
+    @apply bg-white rounded-[2.5rem] border border-gray-100 shadow-premium transition-all hover:shadow-[0_25px_60px_rgba(0,0,0,0.06)];
+  }
+
+  /* Global Layout Helpers */
+  .section-padding {
+    @apply p-10 lg:p-12;
+  }
 }
 
 .custom-scrollbar::-webkit-scrollbar {

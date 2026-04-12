@@ -228,6 +228,8 @@ import { useCustomerByPhone, Customer } from "@/hooks/useCustomers";
 import CreateCustomerModal from "@/components/pos/CreateCustomerModal";
 import type { OrderType } from "@/app/(dashboard)/pos/posSlice";
 
+import toast from "react-hot-toast";
+
 interface PaymentModalProps {
   totalAmount: number;
   onClose: () => void;
@@ -274,6 +276,24 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     }
   }, [phone, customerData, searchSuccess]);
 
+  // Handle table selection with occupancy check
+  const handleTableChange = (selectedId: string) => {
+    const table = tablesRaw?.find((t) => t.id === selectedId);
+    if (table?.status === "OCCUPIED") {
+      toast.error("Table is currently occupied", {
+        icon: "🚫",
+        style: {
+          borderRadius: "15px",
+          background: "#333",
+          color: "#fff",
+        },
+      });
+      // We still set it, but the toast warns the user.
+      // Or we can choose not to set it if we want to be strict.
+    }
+    setTableId(selectedId);
+  };
+
   // Auto-select first table if Dine-In is selected and no table is set
   useEffect(() => {
     if (
@@ -282,7 +302,9 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       tablesRaw &&
       tablesRaw.length > 0
     ) {
-      setTableId(tablesRaw[0].id);
+      // Find first available table if possible
+      const available = tablesRaw.find((t) => t.status === "AVAILABLE");
+      setTableId(available ? available.id : tablesRaw[0].id);
     }
   }, [orderType, tableId, tablesRaw]);
 
@@ -336,6 +358,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     });
   };
 
+  // ─── Component Rendering ───
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto">
@@ -343,7 +366,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
         <div className="w-full md:w-1/3 bg-gray-50 p-6 flex flex-col gap-5 border-r border-gray-100 overflow-y-auto">
           <h2 className="text-xl font-bold text-gray-800">Order Details</h2>
 
-          {/* Order Type */}
+          {/* ... (Order Type buttons) */}
           <div className="flex bg-white p-1 rounded-xl shadow-sm border border-gray-100">
             {["dine-in", "take-away"].map((type) => (
               <button
@@ -356,8 +379,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             ))}
           </div>
 
-          {/* Inputs */}
           <div className="space-y-3">
+            {/* ... (Phone/Customer inputs) */}
             <div className="bg-white px-3 py-2.5 rounded-xl border border-gray-200 flex items-center gap-2">
               <Phone className="text-gray-400" size={16} />
               <input
@@ -415,15 +438,20 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                   />
                   <select
                     value={tableId || ""}
-                    onChange={(e) => setTableId(e.target.value)}
+                    onChange={(e) => handleTableChange(e.target.value)}
                     className="w-full appearance-none bg-white pl-9 pr-9 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 cursor-pointer transition-all"
                   >
                     <option value="" disabled>
                       Select Table
                     </option>
                     {tablesRaw?.map((t) => (
-                      <option key={t.id} value={t.id}>
-                        {t.name} - {t.zone?.name} ({t.capacity})
+                      <option
+                        key={t.id}
+                        value={t.id}
+                        className={t.status === "OCCUPIED" ? "text-gray-400" : ""}
+                      >
+                        {t.name} - {t.zone?.name}{" "}
+                        {t.status === "OCCUPIED" ? "(Occupied)" : `(${t.capacity})`}
                       </option>
                     ))}
                   </select>

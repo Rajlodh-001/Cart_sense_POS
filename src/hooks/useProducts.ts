@@ -1,14 +1,15 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
 
 export interface Product {
   id: string;
   name: string;
   price: number;
+  description: string;
   skuId: string;
   isActive: boolean;
   imageUrl: string;
-  category: { id: string; name: string };
+  category: { id: string; name: string; color: string };
   notes?: { id: string; name: string; note?: string }[];
 }
 
@@ -53,5 +54,52 @@ export const useProductSearch = (searchQuery: string, enabled: boolean) => {
     },
     enabled,
     staleTime: 1000 * 60 * 60, // 1 hour
+  });
+};
+
+// --- CRUD MUTATIONS ---
+
+export const useCreateProduct = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<Product>) => {
+      const res = await axiosInstance.post("/product", data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+};
+
+export const useUpdateProduct = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({
+      id,
+      data,
+    }: {
+      id: string;
+      data: Partial<Product>;
+    }) => {
+      const res = await axiosInstance.patch(`/product/${id}`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
+  });
+};
+
+export const useDeleteProduct = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.delete(`/product/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["products"] });
+    },
   });
 };

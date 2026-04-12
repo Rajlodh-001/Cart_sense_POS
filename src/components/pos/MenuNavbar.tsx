@@ -97,53 +97,53 @@ const MenuNavbar: React.FC<MenuNavbarProps> = ({
   };
 
   return (
-    <div className="w-full mb-3 flex flex-col gap-2 group select-none">
+    <div className="w-full mb-6 flex flex-col gap-4 group select-none font-sans">
       {/* ─── HEADER LINE ─── */}
-      <div className="flex items-center justify-between px-1">
-        <h2 className="text-xl font-bold text-gray-800 tracking-tight">
-          Menu Categories
+      <div className="flex items-center justify-between px-2">
+        <h2 className="text-xl font-black text-gray-900 tracking-tight">
+          Categories
         </h2>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
           {/* Single/Multi Select Switcher */}
-          <div className="flex items-center bg-white border border-gray-200 p-1 rounded-xl shadow-sm">
+          <div className="flex items-center bg-gray-50 border border-gray-100 p-1 rounded-full shadow-inner">
             <button
               onClick={() => onToggleMultiSelect(false)}
-              className={`px-3 py-1.5 text-[11px] uppercase tracking-wider font-bold rounded-lg transition-all ${!isMultiSelect ? "bg-blue-600 text-white shadow-sm" : "text-gray-400 hover:text-gray-700 hover:bg-gray-50 bg-transparent"}`}
+              className={`px-5 py-2 text-[10px] uppercase tracking-widest font-black rounded-full transition-all ${!isMultiSelect ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600 bg-transparent"}`}
             >
               Single
             </button>
             <button
               onClick={() => onToggleMultiSelect(true)}
-              className={`px-3 py-1.5 text-[11px] uppercase tracking-wider font-bold rounded-lg transition-all ${isMultiSelect ? "bg-blue-600 text-white shadow-sm" : "text-gray-400 hover:text-gray-700 hover:bg-gray-50 bg-transparent"}`}
+              className={`px-5 py-2 text-[10px] uppercase tracking-widest font-black rounded-full transition-all ${isMultiSelect ? "bg-white text-primary shadow-sm" : "text-gray-400 hover:text-gray-600 bg-transparent"}`}
             >
               Multi
             </button>
           </div>
 
           {/* Chevron Controls */}
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2">
             <button
               onClick={() => smoothScroll("left")}
               disabled={!showLeftArrow}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                 showLeftArrow
-                  ? "bg-white shadow-sm border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 active:scale-95"
-                  : "bg-gray-50 border border-transparent text-gray-300 cursor-not-allowed"
+                  ? "bg-white shadow-sm border border-gray-100 text-gray-600 hover:text-primary hover:border-primary active:scale-95"
+                  : "bg-gray-50 border border-transparent text-gray-200 cursor-not-allowed"
               }`}
             >
-              <ChevronLeft size={20} className="pr-0.5" />
+              <ChevronLeft size={18} strokeWidth={3} />
             </button>
             <button
               onClick={() => smoothScroll("right")}
               disabled={!showRightArrow}
-              className={`w-9 h-9 rounded-full flex items-center justify-center transition-all ${
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
                 showRightArrow
-                  ? "bg-white shadow-sm border border-gray-200 text-gray-600 hover:text-blue-600 hover:border-blue-200 active:scale-95"
-                  : "bg-gray-50 border border-transparent text-gray-300 cursor-not-allowed"
+                  ? "bg-white shadow-sm border border-gray-100 text-gray-600 hover:text-primary hover:border-primary active:scale-95"
+                  : "bg-gray-50 border border-transparent text-gray-200 cursor-not-allowed"
               }`}
             >
-              <ChevronRight size={20} className="pl-0.5" />
+              <ChevronRight size={18} strokeWidth={3} />
             </button>
           </div>
         </div>
@@ -158,7 +158,7 @@ const MenuNavbar: React.FC<MenuNavbarProps> = ({
           onMouseUp={handleMouseUp}
           onMouseMove={handleMouseMove}
           onScroll={checkArrows}
-          className={`flex items-stretch gap-3 overflow-x-auto pt-1 px-1 scrollbar-hide transition-all ${
+          className={`flex items-stretch gap-3 overflow-x-auto pt-2 pb-4 px-2 scrollbar-hide transition-all ${
             isDragging
               ? "cursor-grabbing"
               : "cursor-grab active:cursor-grabbing"
@@ -167,35 +167,34 @@ const MenuNavbar: React.FC<MenuNavbarProps> = ({
           {/* "All Menu" Card */}
           <button
             onClick={() => handleCategoryClick("all")}
-            className={`group flex flex-col items-center gap-2 px-6 py-4 rounded-2xl transition-all duration-300 flex-shrink-0 border min-w-[110px]
+            className={`group flex flex-col items-start justify-between p-4 rounded-[1.25rem] transition-all duration-200 flex-shrink-0 min-w-[110px] h-[120px]
               ${
                 isAllActive
-                  ? "bg-white border-blue-200 shadow-lg shadow-blue-100/60"
-                  : "bg-white border-gray-100 hover:border-blue-100 hover:shadow-md shadow-sm"
+                  ? "bg-blue-50/30 border border-blue-500 shadow-sm"
+                  : "bg-white border border-transparent shadow-sm hover:shadow-md"
               }`}
           >
             <div
-              className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300
+              className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200
                 ${
                   isAllActive
-                    ? "bg-blue-100 text-blue-500"
-                    : "bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-400"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-50 text-gray-500 group-hover:bg-gray-100"
                 }`}
             >
-              <UtensilsCrossed size={22} />
+              <UtensilsCrossed size={20} strokeWidth={2} />
             </div>
-            <span
-              className={`text-sm font-semibold whitespace-nowrap transition-colors duration-300
-                ${isAllActive ? "text-gray-800" : "text-gray-500 group-hover:text-gray-700"}`}
-            >
-              All Menu
-            </span>
-            <span
-              className={`text-xs font-medium transition-colors duration-300
-                ${isAllActive ? "text-blue-500" : "text-gray-400 group-hover:text-gray-500"}`}
-            >
-              {totalItems} Items
-            </span>
+            <div className="flex flex-col items-start">
+              <span
+                className={`text-[15px] font-medium whitespace-nowrap transition-colors duration-200
+                  ${isAllActive ? "text-blue-600" : "text-gray-800 group-hover:text-blue-600"}`}
+              >
+                All Menu
+              </span>
+              <span className="text-xs text-gray-400 mt-0.5">
+                {totalItems} Items
+              </span>
+            </div>
           </button>
 
           {/* Individual Category Cards */}
@@ -206,44 +205,43 @@ const MenuNavbar: React.FC<MenuNavbarProps> = ({
               <button
                 key={item.id}
                 onClick={() => handleCategoryClick(item.id)}
-                className={`group flex flex-col items-center gap-2 px-6 py-4 rounded-2xl transition-all duration-300 flex-shrink-0 border min-w-[110px]
+                className={`group flex flex-col items-start justify-between p-4 rounded-[1.25rem] transition-all duration-200 flex-shrink-0 min-w-[110px] h-[120px]
                   ${
                     isActive
-                      ? "bg-white border-blue-200 shadow-lg shadow-blue-100/60"
-                      : "bg-white border-gray-100 hover:border-blue-100 hover:shadow-md shadow-sm"
+                      ? "bg-blue-50/30 border border-blue-500 shadow-sm"
+                      : "bg-white border border-transparent shadow-sm hover:shadow-md"
                   }`}
               >
                 <div
-                  className={`w-12 h-12 rounded-xl flex items-center justify-center transition-all duration-300 overflow-hidden
+                  className={`w-11 h-11 rounded-full flex items-center justify-center transition-all duration-200 overflow-hidden
                     ${
                       isActive
-                        ? "bg-blue-100 text-blue-500"
-                        : "bg-gray-50 text-gray-400 group-hover:bg-blue-50 group-hover:text-blue-400"
+                        ? "bg-blue-600 text-white"
+                        : "bg-gray-50 text-gray-500 group-hover:bg-gray-100"
                     }`}
                 >
                   {item.image && item.image !== "asd" ? (
                     <img
                       src={item.image}
                       alt={item.name}
-                      className="w-full h-full object-cover p-1"
+                      className="w-full h-full object-cover p-2"
                       draggable="false"
                     />
                   ) : (
-                    <UtensilsCrossed size={22} />
+                    <UtensilsCrossed size={20} strokeWidth={2} />
                   )}
                 </div>
-                <span
-                  className={`text-sm font-semibold whitespace-nowrap transition-colors duration-300
-                    ${isActive ? "text-gray-800" : "text-gray-500 group-hover:text-gray-700"}`}
-                >
-                  {item.name}
-                </span>
-                <span
-                  className={`text-xs font-medium transition-colors duration-300
-                    ${isActive ? "text-blue-500" : "text-gray-400 group-hover:text-gray-500"}`}
-                >
-                  {item._count?.products || 0} Items
-                </span>
+                <div className="flex flex-col items-start">
+                  <span
+                    className={`text-[15px] font-medium whitespace-nowrap transition-colors duration-200
+                      ${isActive ? "text-blue-600" : "text-gray-800 group-hover:text-blue-600"}`}
+                  >
+                    {item.name}
+                  </span>
+                  <span className="text-xs text-gray-400 mt-0.5">
+                    {item._count?.products || 0} Items
+                  </span>
+                </div>
               </button>
             );
           })}

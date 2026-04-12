@@ -1,12 +1,15 @@
 "use client";
 import React, { useState } from "react";
-import { Plus, Edit2, Search, Filter } from "lucide-react";
+import { Plus, Edit2, Search, Filter, X, Clock, User, ChevronRight, CheckCircle2, Timer, UtensilsCrossed } from "lucide-react";
+import Portal from "../../shared/Portal";
 
 import { useTables, Table } from "@/hooks/useTables";
 
 const TablesView = () => {
   const { data: dbTables, isLoading } = useTables();
   const tables: Table[] = dbTables || [];
+
+  const [selectedTable, setSelectedTable] = useState<Table | null>(null);
 
   // Derived Zones for "Floors" filter
   const zones = Array.from(
@@ -46,11 +49,9 @@ const TablesView = () => {
 
             // Map DB status to UI styles
             let mappedStatus = "Available";
-            if (table.status === "OCCUPIED" || hasOrder)
-              mappedStatus = "Served";
-            // if (table.status === 'DIRTY') mappedStatus = 'Dirty'; // could add a grey styling
-            if (table.status === "RESERVED" && !hasOrder)
-              mappedStatus = "Reserved";
+            if (table.status === "OCCUPIED" || hasOrder) mappedStatus = "Served";
+            if (table.status === "DIRTY") mappedStatus = "Dirty";
+            if (table.status === "RESERVED" && !hasOrder) mappedStatus = "Reserved";
 
             let guests = 0;
             let timeStr = "--:--";
@@ -72,6 +73,7 @@ const TablesView = () => {
             return (
               <TableCard
                 key={table.id}
+                onClick={() => setSelectedTable(table)}
                 data={{
                   id: table.name, // Usually T-01 is stored in 'name'
                   status: mappedStatus,
@@ -157,13 +159,185 @@ const TablesView = () => {
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <span className="w-3 h-3 rounded-full bg-red-500"></span> Reserved
         </div>
+        <div className="flex items-center gap-2 text-sm text-gray-600">
+          <span className="w-3 h-3 rounded-full bg-amber-500"></span> Dirty
+        </div>
       </div>
+
+      {/* DETAIL MODAL */}
+      <TableDetailModal
+        table={selectedTable}
+        onClose={() => setSelectedTable(null)}
+      />
     </div>
   );
 };
 
+// --- SUB-COMPONENT: Table Detail Modal ---
+const TableDetailModal = ({
+  table,
+  onClose,
+}: {
+  table: Table | null;
+  onClose: () => void;
+}) => {
+  if (!table) return null;
+
+  const activeOrder = table.orders?.[0];
+  const items = activeOrder?.items || [];
+
+  return (
+    <Portal>
+      <div className="fixed inset-0 z-[1100] flex items-center justify-center p-4">
+        {/* Backdrop */}
+        <div
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
+          onClick={onClose}
+        />
+
+        {/* Modal Content */}
+        <div className="relative bg-white w-full max-w-lg rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col animate-in zoom-in-95 duration-200 group">
+          {/* Header Section */}
+          <div className="p-8 bg-gradient-to-br from-gray-50 to-white border-b border-gray-100">
+            <div className="flex justify-between items-start mb-6">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center text-white font-black text-2xl shadow-xl shadow-blue-100">
+                  {table.name}
+                </div>
+                <div>
+                  <h2 className="text-2xl font-black text-gray-900 tracking-tight">
+                    {activeOrder?.customer?.name || "Guest Table"}
+                  </h2>
+                  <div className="flex items-center gap-2 mt-1">
+                    <span
+                      className={`px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-wider
+                      ${
+                        table.status === "OCCUPIED"
+                          ? "bg-blue-100 text-blue-600"
+                          : table.status === "DIRTY"
+                            ? "bg-amber-100 text-amber-600"
+                            : "bg-gray-100 text-gray-500"
+                      }
+                    `}
+                    >
+                      {table.status}
+                    </span>
+                    <span className="text-xs text-gray-400 font-bold flex items-center gap-1">
+                      <Clock size={12} />{" "}
+                      {activeOrder
+                        ? new Date(activeOrder.orderTime).toLocaleTimeString(
+                            [],
+                            { hour: "2-digit", minute: "2-digit" },
+                          )
+                        : "No active order"}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <button
+                onClick={onClose}
+                className="p-3 bg-white hover:bg-red-50 hover:text-red-500 rounded-2xl border border-gray-100 transition-all active:scale-90"
+              >
+                <X size={20} />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                  <User size={10} className="text-blue-500" /> Seated Guests
+                </p>
+                <p className="text-lg font-bold text-gray-900">
+                  {table.capacity} Persons
+                </p>
+              </div>
+              <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-1 flex items-center gap-1.5">
+                  <Timer size={10} className="text-blue-500" /> Active Time
+                </p>
+                <p className="text-lg font-bold text-gray-900">--:--</p>
+              </div>
+            </div>
+          </div>
+
+          {/* Items List */}
+          <div className="flex-1 overflow-y-auto p-8 max-h-[400px] bg-white scrollbar-hide">
+            <h3 className="text-xs font-black text-gray-400 uppercase tracking-[0.2em] mb-6 flex items-center gap-2">
+              <UtensilsCrossed size={14} className="text-blue-500" /> Order
+              Summary
+            </h3>
+
+            {items.length === 0 ? (
+              <div className="py-10 text-center text-gray-400 font-bold italic">
+                No items ordered yet.
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {items.map((item, idx) => (
+                  <div
+                    key={idx}
+                    className="flex justify-between items-center group/item"
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-gray-50 rounded-xl flex items-center justify-center text-gray-400 font-bold text-sm transition-colors group-hover/item:bg-blue-50 group-hover/item:text-blue-600">
+                        {item.quantity}x
+                      </div>
+                      <div>
+                        <p className="font-bold text-gray-800 text-base leading-tight">
+                          {item.name}
+                        </p>
+                        <p className="text-xs text-gray-400 font-bold mt-0.5">
+                          Regular
+                        </p>
+                      </div>
+                    </div>
+
+                    <div
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl font-black text-[10px] uppercase tracking-wider
+                      ${
+                        item.status === "SERVED"
+                          ? "bg-green-50 text-green-600"
+                          : item.status === "READY"
+                            ? "bg-blue-50 text-blue-600"
+                            : item.status === "PREPARING"
+                              ? "bg-amber-50 text-amber-600"
+                              : "bg-gray-50 text-gray-400"
+                      }
+                    `}
+                    >
+                      {item.status === "SERVED" && <CheckCircle2 size={12} />}
+                      {item.status}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Footer Actions */}
+          <div className="p-8 bg-gray-50 border-t border-gray-100 flex gap-3">
+            <button
+              onClick={onClose}
+              className="flex-1 py-4 bg-white border border-gray-200 rounded-2xl font-black text-gray-600 hover:bg-gray-100 transition-all active:scale-95"
+            >
+              Close
+            </button>
+            <button className="flex-[1.5] py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-2 group/btn">
+              Go to Billing{" "}
+              <ChevronRight
+                size={18}
+                className="group-hover/btn:translate-x-1 transition-transform"
+              />
+            </button>
+          </div>
+        </div>
+      </div>
+    </Portal>
+  );
+};
+
 // --- SUB-COMPONENT: Table Card ---
-const TableCard = ({ data }: { data: any }) => {
+const TableCard = ({ data, onClick }: { data: any; onClick: () => void }) => {
   // Styles configuration based on status
   const styles: any = {
     Available: {
@@ -184,12 +358,19 @@ const TableCard = ({ data }: { data: any }) => {
       name: "text-red-500",
       time: "text-gray-600",
     },
+    Dirty: {
+      card: "bg-white border-amber-100 grayscale-[0.5]",
+      pill: "bg-amber-500 text-white",
+      name: "text-amber-600",
+      time: "text-gray-400",
+    },
   };
 
   const currentStyle = styles[data.status];
 
   return (
     <div
+      onClick={onClick}
       className={`p-6 rounded-3xl border flex flex-col items-center justify-center gap-3 transition-all cursor-pointer hover:shadow-md ${currentStyle.card}`}
     >
       {/* Table ID Pill */}

@@ -62,9 +62,30 @@ export function useOrder(id: string) {
     queryKey: ["order", id],
     queryFn: async () => {
       const response = await axiosInstance.get(`/order/${id}`);
-      return response.data; // Expected format: One Order Object
+      return response.data.order; // Return the nested order object directly
     },
     enabled: !!id, // Only run the query if an ID is provided
     staleTime: 60000, // Consider the details fresh for 1 minute
+  });
+}
+
+export function useOrderHistory(filters?: {
+  status?: string;
+  type?: string;
+  search?: string;
+  fromDate?: string;
+  toDate?: string;
+  page?: number;
+  limit?: number;
+}) {
+  return useQuery({
+    queryKey: ["orderHistory", filters],
+    queryFn: async () => {
+      const response = await axiosInstance.get("/order/history", {
+        params: filters,
+      });
+      return response.data; // Expected format: { orders: Order[], totalCount: number, ... }
+    },
+    staleTime: 30000,
   });
 }

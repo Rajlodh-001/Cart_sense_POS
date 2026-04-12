@@ -96,7 +96,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
           </h2>
           <p className="text-gray-400 text-sm font-medium mt-0.5">
             #{String(order?.orderNo ?? 0).padStart(4, "0")} ·{" "}
-            {(order?.type || "Order").replace("_", " ")}
+            {(order?.orderType || "Order").replace("_", " ")}
           </p>
         </div>
         <div className="flex items-center gap-3">
