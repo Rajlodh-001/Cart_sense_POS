@@ -1,11 +1,12 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
+import toast from "react-hot-toast";
 
 export interface Category {
   id: string;
   name: string;
   color?: string;
-  image?: string;
+  imageUrl?: string;
   icon?: string;
   _count?: {
     products: number;
@@ -13,12 +14,14 @@ export interface Category {
 }
 
 interface CategoriesResponse {
-  categories: Category[];
-  filteredCount: number;
-  totalCount: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  data: Category[];
+  meta: {
+    total: number;
+    filteredTotal: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 /**
@@ -33,7 +36,7 @@ export const useCategories = () => {
       const res = await axiosInstance.get<CategoriesResponse>(
         "/category?limit=100",
       );
-      return res.data.categories;
+      return res.data.data;
     },
     staleTime: 1000 * 60 * 60, // 1 hour locally cached
   });
@@ -50,7 +53,12 @@ export const useCreateCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Category created!");
     },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Failed to create category";
+      toast.error(message);
+    }
   });
 };
 
@@ -63,7 +71,12 @@ export const useUpdateCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Category updated");
     },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Failed to update category";
+      toast.error(message);
+    }
   });
 };
 
@@ -76,6 +89,11 @@ export const useDeleteCategory = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["categories"] });
+      toast.success("Category deleted");
     },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Failed to delete category";
+      toast.error(message);
+    }
   });
 };

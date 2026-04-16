@@ -89,8 +89,8 @@ const MenuPage = ({ products }: MenuPageProps) => {
                 price: Number(item.price),
                 quantity: 1,
                 note: "",
-                availableModifiers: item.notes?.map((n) => n.name) || [],
-                description: ""
+                availableModifiers: item.modifiers?.map((m) => m.name) || [],
+                description: item.description || ""
               }),
             )
           }

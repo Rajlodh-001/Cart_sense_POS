@@ -28,6 +28,7 @@ import {
   MapPin,
   BadgePercent,
 } from "lucide-react";
+import CustomDropdown from "@/components/shared/CustomDropdown";
 import Modal from "@/components/shared/Modal";
 import ItemDetailModal from "./ItemDetailModal";
 import PaymentModal from "@/components/activity/PaymentModal";
@@ -39,110 +40,6 @@ const orderTypeOptions = [
   { id: 2, label: "Takeaway" },
   { id: 3, label: "Timed Order" },
 ];
-
-const tableOptions = [
-  { id: 1, label: "Table 1" },
-  { id: 2, label: "Table 2" },
-  { id: 3, label: "Table 3" },
-  { id: 4, label: "Table 4" },
-  { id: 5, label: "Table 5" },
-];
-
-/* ─── Custom Dropdown Component ─── */
-interface DropdownOption {
-  id: number | string;
-  label: string;
-}
-
-const CustomDropdown = ({
-  options,
-  value,
-  onChange,
-  icon: Icon,
-}: {
-  options: DropdownOption[];
-  value: number | string | null;
-  onChange: (id: any) => void;
-  icon: React.FC<{ size?: number; className?: string }>;
-}) => {
-  const [isOpen, setIsOpen] = useState(false);
-  const ref = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const handleClickOutside = (e: MouseEvent) => {
-      if (ref.current && !ref.current.contains(e.target as Node)) {
-        setIsOpen(false);
-      }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, []);
-
-  const selected = options.find((o) => o.id === value);
-
-  return (
-    <div className="flex-1 relative" ref={ref}>
-      <button
-        onClick={() => setIsOpen(!isOpen)}
-        className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all border ${
-          isOpen
-            ? "bg-blue-50 border-blue-200 text-blue-700 shadow-sm shadow-blue-100"
-            : "bg-gray-50 border-transparent text-gray-700 hover:bg-gray-100"
-        }`}
-      >
-        <Icon
-          size={16}
-          className={isOpen ? "text-blue-500" : "text-gray-400"}
-        />
-        <span className="flex-1 text-left truncate">{selected?.label}</span>
-        <ChevronDown
-          size={15}
-          className={`transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-blue-500" : "text-gray-400"
-          }`}
-        />
-      </button>
-
-      {/* Dropdown Menu */}
-      {isOpen && (
-        <div className="absolute left-0 right-0 top-full mt-1.5 bg-white border border-gray-100 rounded-xl shadow-lg shadow-gray-200/60 z-20 py-1 overflow-hidden animate-dropdown">
-          {options.map((opt) => (
-            <button
-              key={opt.id}
-              onClick={() => {
-                onChange(opt.id);
-                setIsOpen(false);
-              }}
-              className={`w-full text-left px-4 py-2.5 text-sm font-medium transition-colors ${
-                opt.id === value
-                  ? "bg-blue-50 text-blue-600"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              }`}
-            >
-              {opt.label}
-            </button>
-          ))}
-        </div>
-      )}
-
-      <style jsx>{`
-        @keyframes dropdownOpen {
-          from {
-            opacity: 0;
-            transform: translateY(-6px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-        .animate-dropdown {
-          animation: dropdownOpen 0.15s ease-out;
-        }
-      `}</style>
-    </div>
-  );
-};
 
 const OrderContainer = () => {
   const dispatch = useDispatch();
@@ -484,10 +381,11 @@ const OrderContainer = () => {
       <Modal
         show={isModalOpen}
         onClose={closeModal}
-        title="Item Details"
+        title=""
         index={selectedItem ?? 0}
         showCloseButton={false}
         closeOnOverlayClick={false}
+        className="md:max-w-md w-full"
       >
         {selectedItem !== null && (
           <ItemDetailModal itemId={selectedItem} onClose={closeModal} />

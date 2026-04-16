@@ -9,15 +9,19 @@ interface AdminProductTableProps {
   isLoading: boolean;
 }
 
-const AdminProductTable: React.FC<AdminProductTableProps> = ({ 
-  products, 
-  onEdit, 
-  isLoading 
+const AdminProductTable: React.FC<AdminProductTableProps> = ({
+  products,
+  onEdit,
+  isLoading,
 }) => {
   const deleteMutation = useDeleteProduct();
 
   const handleDelete = async (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete "${name}"? This action cannot be undone.`)) {
+    if (
+      confirm(
+        `Are you sure you want to delete "${name}"? This action cannot be undone.`,
+      )
+    ) {
       try {
         await deleteMutation.mutateAsync(id);
       } catch (error) {
@@ -31,7 +35,10 @@ const AdminProductTable: React.FC<AdminProductTableProps> = ({
       <div className="w-full bg-white rounded-[2rem] border border-gray-100 overflow-hidden">
         <div className="h-20 bg-gray-50 animate-pulse border-b border-gray-100" />
         {Array.from({ length: 5 }).map((_, i) => (
-          <div key={i} className="h-24 bg-white animate-pulse border-b border-gray-50" />
+          <div
+            key={i}
+            className="h-24 bg-white animate-pulse border-b border-gray-50"
+          />
         ))}
       </div>
     );
@@ -42,33 +49,54 @@ const AdminProductTable: React.FC<AdminProductTableProps> = ({
       <table className="w-full text-left border-collapse">
         <thead>
           <tr className="bg-gray-50/50">
-            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">Product</th>
-            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">SKU</th>
-            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Price</th>
-            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Category</th>
-            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">Status</th>
-            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">Actions</th>
+            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest">
+              Product
+            </th>
+            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+              SKU
+            </th>
+            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+              Price
+            </th>
+            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+              Category
+            </th>
+            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-center">
+              Status
+            </th>
+            <th className="py-5 px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest text-right">
+              Actions
+            </th>
           </tr>
         </thead>
         <tbody className="divide-y divide-gray-50">
           {products.length === 0 ? (
             <tr>
-              <td colSpan={6} className="py-20 text-center text-gray-400 font-medium">
+              <td
+                colSpan={6}
+                className="py-20 text-center text-gray-400 font-medium"
+              >
                 No products found. Add your first product to get started!
               </td>
             </tr>
           ) : (
             products.map((product) => (
-              <tr key={product.id} className="hover:bg-gray-50/30 transition-colors group">
+              <tr
+                key={product.id}
+                className="hover:bg-gray-50/30 transition-colors group"
+              >
                 <td className="py-5 px-6">
                   <div className="flex items-center gap-4">
                     <div className="w-14 h-14 rounded-2xl bg-gray-100 flex-shrink-0 overflow-hidden border border-gray-50 shadow-sm">
                       {product.imageUrl ? (
-                        <img 
-                          src={product.imageUrl} 
-                          alt={product.name} 
+                        <img
+                          src={product.imageUrl}
+                          alt={product.name}
                           className="w-full h-full object-cover"
-                          onError={(e) => { (e.target as HTMLImageElement).src = "https://placehold.co/100x100?text=No+Img"; }}
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src =
+                              "https://placehold.co/100x100?text=No+Img";
+                          }}
                         />
                       ) : (
                         <div className="w-full h-full flex items-center justify-center text-gray-300 bg-gray-50">
@@ -77,8 +105,12 @@ const AdminProductTable: React.FC<AdminProductTableProps> = ({
                       )}
                     </div>
                     <div>
-                      <h4 className="font-black text-gray-900 leading-tight">{product.name}</h4>
-                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">ID: {product.id.substring(0, 8)}</p>
+                      <h4 className="font-black text-gray-900 leading-tight">
+                        {product.name}
+                      </h4>
+                      <p className="text-[10px] text-gray-400 font-bold uppercase tracking-wider mt-0.5">
+                        ID: {product.id.substring(0, 8)}
+                      </p>
                     </div>
                   </div>
                 </td>
@@ -89,7 +121,16 @@ const AdminProductTable: React.FC<AdminProductTableProps> = ({
                   ${Number(product.price).toFixed(2)}
                 </td>
                 <td className="py-5 px-6 text-center">
-                  <span className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-1.5 border border-blue-100/50">
+                  <span
+                    className="px-3 py-1.5 rounded-xl text-[10px] font-black uppercase tracking-widest inline-flex items-center gap-1.5 border transition-all duration-300"
+                    style={{
+                      backgroundColor:
+                        (product.category?.color || "#94a3b8") + "15",
+                      color: product.category?.color || "#64748b",
+                      borderColor:
+                        (product.category?.color || "#94a3b8") + "20",
+                    }}
+                  >
                     <Layers size={12} />
                     {product.category?.name || "Uncategorized"}
                   </span>
@@ -109,13 +150,13 @@ const AdminProductTable: React.FC<AdminProductTableProps> = ({
                 </td>
                 <td className="py-5 px-6">
                   <div className="flex items-center justify-end gap-2">
-                    <button 
+                    <button
                       onClick={() => onEdit(product)}
                       className="p-2.5 bg-white text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all border border-gray-100 hover:border-blue-100 flex items-center justify-center"
                     >
                       <Edit size={16} />
                     </button>
-                    <button 
+                    <button
                       onClick={() => handleDelete(product.id, product.name)}
                       disabled={deleteMutation.isPending}
                       className="p-2.5 bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-gray-100 hover:border-red-100 flex items-center justify-center disabled:opacity-50"

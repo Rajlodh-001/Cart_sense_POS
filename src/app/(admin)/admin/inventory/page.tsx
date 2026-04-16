@@ -2,11 +2,13 @@
 import React, { useState } from "react";
 import { Package, Plus, Layers, Sliders, Search, Trash2, Edit } from "lucide-react";
 import { useInitialProducts, Product } from "@/hooks/useProducts";
-import { useCategories, useDeleteCategory } from "@/hooks/useCategories";
+import { useModifiers } from "@/hooks/useModifiers";
+import { useCategories, useDeleteCategory, Category } from "@/hooks/useCategories";
 import Modal from "@/components/shared/Modal";
 import AdminProductTable from "@/components/admin/inventory/AdminProductTable";
 import AddProductModal from "@/components/admin/inventory/AddProductModal";
 import AddCategoryModal from "@/components/admin/inventory/AddCategoryModal";
+import AddModifierModal from "@/components/admin/inventory/AddModifierModal";
 
 type TabId = "products" | "categories" | "modifiers";
 
@@ -14,15 +16,32 @@ export default function InventoryPage() {
   const [activeTab, setActiveTab] = useState<TabId>("products");
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+  const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
+  
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [editingModifier, setEditingModifier] = useState<any | null>(null);
 
   const { data: products = [], isLoading: isLoadingProducts } = useInitialProducts();
   const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
+  const { data: modifiersData, isLoading: isLoadingModifiers } = useModifiers();
+  const modifiers = modifiersData?.data || [];
+
   const deleteCategoryMutation = useDeleteCategory();
 
   const handleEditProduct = (product: Product) => {
     setEditingProduct(product);
     setIsProductModalOpen(true);
+  };
+
+  const handleEditCategory = (category: Category) => {
+    setEditingCategory(category);
+    setIsCategoryModalOpen(true);
+  };
+
+  const handleEditModifier = (modifier: any) => {
+    setEditingModifier(modifier);
+    setIsModifierModalOpen(true);
   };
 
   const handleDeleteCategory = (id: string, name: string) => {
@@ -33,7 +52,7 @@ export default function InventoryPage() {
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Page Header */}
+      {/* Page Header ... (keep lines 42-69) */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
         <div>
           <h2 className="text-4xl font-black text-gray-900 tracking-tight">Inventory</h2>
@@ -52,17 +71,26 @@ export default function InventoryPage() {
           )}
           {activeTab === "categories" && (
             <button 
-              onClick={() => setIsCategoryModalOpen(true)}
+              onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }}
               className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-[1.5rem] font-bold shadow-xl shadow-gray-200 hover:bg-emerald-600 transition-all active:scale-95"
             >
               <Plus size={20} />
               <span>Add Category</span>
             </button>
           )}
+          {activeTab === "modifiers" && (
+            <button 
+              onClick={() => { setEditingModifier(null); setIsModifierModalOpen(true); }}
+              className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-[1.5rem] font-bold shadow-xl shadow-gray-200 hover:bg-blue-600 transition-all active:scale-95"
+            >
+              <Plus size={20} />
+              <span>Add Modifier</span>
+            </button>
+          )}
         </div>
       </div>
 
-      {/* Tabs Navigation */}
+      {/* Tabs Navigation ... (keep lines 70-164) */}
       <div className="flex items-center gap-2 p-1.5 bg-gray-100/80 rounded-3xl w-fit">
         {[
           { id: "products", label: "Products", icon: Package },
@@ -115,26 +143,47 @@ export default function InventoryPage() {
         )}
 
         {activeTab === "categories" && (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-2 duration-500">
             {categories.map((category) => (
-              <div key={category.id} className="p-8 bg-white rounded-[2.5rem] border border-gray-100 shadow-sm group hover:border-emerald-200 transition-all">
-                <div className="flex items-center justify-between mb-4">
-                   <div className="w-12 h-12 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center">
-                      <Layers size={22} />
-                   </div>
-                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button 
-                        onClick={() => handleDeleteCategory(category.id, category.name)}
-                        className="p-2 text-gray-400 hover:text-red-500 transition-colors"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                   </div>
+              <div key={category.id} className="p-10 bg-white rounded-[3.5rem] border border-gray-100 shadow-premium group hover:border-emerald-200 hover:shadow-2xl hover:shadow-emerald-100/50 transition-all duration-500 relative overflow-hidden">
+                <div className="absolute -right-4 -top-4 w-32 h-32 bg-emerald-50 rounded-full opacity-0 group-hover:opacity-40 transition-opacity blur-3xl" />
+                
+                <div className="flex items-start justify-between mb-8 relative z-10">
+                    <div 
+                      className="w-20 h-20 rounded-[2rem] flex items-center justify-center shadow-lg transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500"
+                      style={{ backgroundColor: (category.color || "#10b981") + "15", color: category.color || "#10b981" }}
+                    >
+                       <Layers size={32} strokeWidth={1.5} />
+                    </div>
+                    <div className="flex items-center gap-2">
+                       <button 
+                         onClick={() => handleEditCategory(category)}
+                         className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-500 transition-all border border-transparent hover:border-emerald-100"
+                       >
+                         <Edit size={16} />
+                       </button>
+                       <button 
+                         onClick={() => handleDeleteCategory(category.id, category.name)}
+                         className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all border border-transparent hover:border-red-100"
+                       >
+                         <Trash2 size={16} />
+                       </button>
+                    </div>
                 </div>
-                <h4 className="text-xl font-black text-gray-900 mb-1">{category.name}</h4>
-                <div className="flex items-center gap-3 mt-4">
-                   <div className="px-3 py-1 bg-gray-50 rounded-lg text-[10px] font-black text-gray-400 uppercase tracking-widest">
-                      {category._count?.products || 0} Products
+                
+                <h4 className="text-2xl font-black text-gray-900 mb-2 relative z-10">{category.name}</h4>
+                <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.2em] mb-6">Catalog Division</p>
+                
+                <div className="flex items-center justify-between pt-6 border-t border-gray-50 relative z-10">
+                   <div className="flex items-center gap-3">
+                      <div className="px-5 py-2 bg-emerald-50 text-emerald-600 rounded-full text-[10px] font-black uppercase tracking-widest border border-emerald-100/50">
+                         {category._count?.products || 0} Products
+                      </div>
+                   </div>
+                   <div className="flex -space-x-3">
+                      <div className="w-10 h-10 rounded-full border-4 border-white bg-gray-100 flex items-center justify-center text-[10px] font-black text-gray-300">
+                         {category._count?.products || ""}
+                      </div>
                    </div>
                 </div>
               </div>
@@ -149,14 +198,68 @@ export default function InventoryPage() {
         )}
 
         {activeTab === "modifiers" && (
-          <div className="p-10 bg-white rounded-[3rem] border border-gray-100 shadow-sm flex flex-col items-center justify-center min-h-[400px] border-dashed border-2">
-            <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center text-gray-300 mb-6">
-              <Sliders size={40} />
-            </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">Modifier Management</h3>
-            <p className="text-gray-400 max-w-sm text-center font-medium">
-              Toppings, syrups, and portions customization will be mapped here soon.
-            </p>
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+             <div className="flex items-center justify-between px-2">
+                <div>
+                   <div className="text-xs font-black text-gray-400 uppercase tracking-widest">
+                      Global Modifier Library
+                   </div>
+                   <p className="text-[10px] font-bold text-gray-400 mt-1 italic">
+                      Edit a modifier once to update it across all attached products.
+                   </p>
+                </div>
+             </div>
+
+             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {modifiers.map((mod) => (
+                  <div key={mod.id} className="p-10 bg-white rounded-[3rem] border border-gray-100 shadow-premium-hover group hover:border-blue-200 transition-all duration-500 flex flex-col justify-between">
+                     <div>
+                        <div className="flex items-center justify-between mb-8">
+                           <div className="w-16 h-16 bg-blue-50 text-blue-600 rounded-[1.75rem] flex items-center justify-center transform group-hover:scale-110 group-hover:rotate-3 transition-all duration-500">
+                              <Sliders size={28} />
+                           </div>
+                           <button 
+                             onClick={() => handleEditModifier(mod)}
+                             className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all border border-blue-100/50"
+                           >
+                             Manage
+                           </button>
+                        </div>
+                        <h4 className="text-xl font-black text-gray-900 mb-2">{mod.name}</h4>
+                        <p className="text-sm text-gray-500 font-bold mb-6 line-clamp-2 leading-relaxed">{mod.note || "No details provided."}</p>
+                     </div>
+                     
+                     <div className="pt-6 border-t border-gray-50 flex flex-col gap-5">
+                        <div className="flex items-center justify-between">
+                           <div className="px-4 py-2 bg-blue-50/50 rounded-full text-[10px] font-black text-blue-500 uppercase tracking-widest border border-blue-100/30">
+                              Used by {mod._count?.products || 0} Products
+                           </div>
+                        </div>
+                        {mod.products && mod.products.length > 0 && (
+                          <div className="flex -space-x-3 pb-2 overflow-hidden">
+                             {mod.products.slice(0, 5).map((p: any) => (
+                               <div key={p.id} className="w-12 h-12 rounded-full border-4 border-white bg-gray-100 overflow-hidden shadow-sm" title={p.name}>
+                                 {p.imageUrl ? <img src={p.imageUrl} alt={p.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-gray-300"><Layers size={14} /></div>}
+                               </div>
+                             ))}
+                             {(mod._count?.products || 0) > 5 && (
+                               <div className="w-12 h-12 rounded-full border-4 border-white bg-gray-50 flex items-center justify-center text-xs font-black text-gray-500 shadow-sm">
+                                 +{(mod._count?.products || 0) - 5}
+                               </div>
+                             )}
+                          </div>
+                        )}
+                     </div>
+                  </div>
+                ))}
+                {modifiers.length === 0 && !isLoadingModifiers && (
+                  <div className="col-span-full py-20 bg-white rounded-[3rem] border-2 border-dashed border-gray-100 flex flex-col items-center justify-center text-gray-400">
+                     <Sliders size={48} strokeWidth={1} className="mb-4 opacity-20" />
+                     <p className="font-bold uppercase tracking-widest text-[10px]">Your Library is Empty</p>
+                     <p className="text-xs mt-2">Create your first global modifier to start sharing it.</p>
+                  </div>
+                )}
+             </div>
           </div>
         )}
       </div>
@@ -168,6 +271,7 @@ export default function InventoryPage() {
         index={100}
         title={editingProduct ? "Edit Product" : "Add Product"}
         showCloseButton={false}
+        className="w-full md:w-3/4 lg:w-[85%] xl:max-w-6xl"
       >
         <AddProductModal 
           product={editingProduct}
@@ -177,13 +281,29 @@ export default function InventoryPage() {
 
       <Modal 
         show={isCategoryModalOpen} 
-        onClose={() => setIsCategoryModalOpen(false)}
+        onClose={() => { setIsCategoryModalOpen(false); setEditingCategory(null); }}
         index={100}
-        title="Add Category"
+        title={editingCategory ? "Edit Category" : "Add Category"}
         showCloseButton={false}
+        className="w-full md:w-3/4 lg:w-[85%] xl:max-w-4xl"
       >
         <AddCategoryModal 
-          onClose={() => setIsCategoryModalOpen(false)} 
+          category={editingCategory}
+          onClose={() => { setIsCategoryModalOpen(false); setEditingCategory(null); }} 
+        />
+      </Modal>
+
+      <Modal 
+        show={isModifierModalOpen} 
+        onClose={() => { setIsModifierModalOpen(false); setEditingModifier(null); }}
+        index={100}
+        title={editingModifier ? "Edit Modifier" : "Add Modifier"}
+        showCloseButton={false}
+        className="w-full md:w-3/4 lg:w-[85%] xl:max-w-4xl"
+      >
+        <AddModifierModal 
+          modifier={editingModifier}
+          onClose={() => { setIsModifierModalOpen(false); setEditingModifier(null); }} 
         />
       </Modal>
     </div>

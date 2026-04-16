@@ -1,25 +1,44 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import axiosInstance from "@/lib/axios";
+import toast from "react-hot-toast";
 
 export interface Product {
   id: string;
   name: string;
   price: number;
-  description: string;
   skuId: string;
   isActive: boolean;
   imageUrl: string;
   category: { id: string; name: string; color: string };
-  notes?: { id: string; name: string; note?: string }[];
+  categoryId?: string;
+  
+  // New Fields
+  description?: string;
+  additionalNotes?: string;
+  discount?: number;
+  color?: string;
+  size?: string;
+  calories?: number;
+  protein?: number;
+  carbs?: number;
+  fat?: number;
+  weight?: number;
+  recipe?: any;
+  cookingDescription?: any;
+  
+  modifiers?: { id: string; name: string; note?: string }[];
+  modifierIds?: string[];
 }
 
 interface ProductsResponse {
-  products: Product[];
-  filteredCount: number;
-  totalCount: number;
-  page: number;
-  limit: number;
-  totalPages: number;
+  data: Product[];
+  meta: {
+    total: number;
+    filteredTotal: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  };
 }
 
 /**
@@ -33,7 +52,7 @@ export const useInitialProducts = () => {
       // Fetch a larger limit to have a good local cache, adjust as needed
       const res =
         await axiosInstance.get<ProductsResponse>("/product?limit=200");
-      return res.data.products;
+      return res.data.data;
     },
     staleTime: 1000 * 60 * 60, // 1 hour
   });
@@ -50,7 +69,7 @@ export const useProductSearch = (searchQuery: string, enabled: boolean) => {
       const res = await axiosInstance.get<ProductsResponse>(
         `/product?search=${encodeURIComponent(searchQuery)}`,
       );
-      return res.data.products;
+      return res.data.data;
     },
     enabled,
     staleTime: 1000 * 60 * 60, // 1 hour
@@ -68,7 +87,12 @@ export const useCreateProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product created successfully!");
     },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Failed to create product";
+      toast.error(message);
+    }
   });
 };
 
@@ -87,7 +111,12 @@ export const useUpdateProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product changes saved!");
     },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Failed to update product";
+      toast.error(message);
+    }
   });
 };
 
@@ -100,6 +129,11 @@ export const useDeleteProduct = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["products"] });
+      toast.success("Product removed from catalog");
     },
+    onError: (error: any) => {
+      const message = error.response?.data?.message || "Failed to delete product";
+      toast.error(message);
+    }
   });
 };

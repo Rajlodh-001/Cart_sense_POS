@@ -17,6 +17,8 @@ interface ModalProps {
   closeOnOverlayClick?: boolean;
   /** Close modal when pressing the Escape key. Default: true */
   closeOnEsc?: boolean;
+  /** Custom classes for the modal container (e.g. width overrides). */
+  className?: string;
 }
 
 const Modal: React.FC<ModalProps> = ({
@@ -28,6 +30,7 @@ const Modal: React.FC<ModalProps> = ({
   showCloseButton = true,
   closeOnOverlayClick = true,
   closeOnEsc = true,
+  className,
 }) => {
   // ESC key handler (Included in previous response)
   useEffect(() => {
@@ -68,8 +71,7 @@ const Modal: React.FC<ModalProps> = ({
       >
         {/* Modal Content Box */}
         <div
-          className="bg-white rounded-lg shadow-2xl w-full max-h-full overflow-y-auto
-                     md:w-3/4 lg:w-1/2 xl:max-w-xl"
+          className={`${className || "w-full md:w-3/4 lg:w-1/2 xl:max-w-xl"} bg-white rounded-3xl shadow-2xl max-h-full overflow-hidden flex flex-col`}
           onClick={(e) => e.stopPropagation()}
         >
           {/* Modal Header (optional close button) */}

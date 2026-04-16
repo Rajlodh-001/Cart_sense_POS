@@ -15,6 +15,7 @@ export interface Table {
   orders?: {
     id: string;
     orderTime: string;
+    seatCount: number;
     customer?: { name: string };
     items?: { name: string; quantity: number; status: string }[];
   }[];

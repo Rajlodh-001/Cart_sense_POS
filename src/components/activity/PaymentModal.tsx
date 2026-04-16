@@ -226,6 +226,7 @@ import {
 import { useTables } from "@/hooks/useTables";
 import { useCustomerByPhone, Customer } from "@/hooks/useCustomers";
 import CreateCustomerModal from "@/components/pos/CreateCustomerModal";
+import CustomDropdown from "@/components/shared/CustomDropdown";
 import type { OrderType } from "@/app/(dashboard)/pos/posSlice";
 
 import toast from "react-hot-toast";
@@ -363,7 +364,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
       <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto">
         {/* --- LEFT SIDE: ORDER DETAILS --- */}
-        <div className="w-full md:w-1/3 bg-gray-50 p-6 flex flex-col gap-5 border-r border-gray-100 overflow-y-auto">
+        <div className="w-full md:w-[38%] bg-gray-50 p-6 flex flex-col gap-5 border-r border-gray-100 overflow-y-auto">
           <h2 className="text-xl font-bold text-gray-800">Order Details</h2>
 
           {/* ... (Order Type buttons) */}
@@ -431,49 +432,66 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
             {orderType === "dine-in" && (
               <>
-                <div className="relative">
-                  <MapPin
-                    className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                    size={16}
+                <div className="animate-in slide-in-from-top-2 duration-300 space-y-3">
+                  <CustomDropdown
+                    icon={MapPin}
+                    placeholder="Select Table"
+                    value={tableId}
+                    onChange={(id) => handleTableChange(id)}
+                    options={
+                      tablesRaw?.map((t) => {
+                        const seatedCount =
+                          t.orders?.reduce(
+                            (acc, o) => acc + (o.seatCount || 0),
+                            0,
+                          ) || 0;
+                        return {
+                          id: t.id,
+                          label: `${t.name} • ${t.zone?.name}`,
+                          subLabel:
+                            t.status === "OCCUPIED"
+                              ? `${seatedCount}/${t.capacity} Seated`
+                              : `Cap: ${t.capacity}`,
+                          isOccupied: t.status === "OCCUPIED",
+                        };
+                      }) || []
+                    }
                   />
-                  <select
-                    value={tableId || ""}
-                    onChange={(e) => handleTableChange(e.target.value)}
-                    className="w-full appearance-none bg-white pl-9 pr-9 py-2.5 rounded-xl border border-gray-200 text-sm font-medium text-gray-700 outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-100 cursor-pointer transition-all"
-                  >
-                    <option value="" disabled>
-                      Select Table
-                    </option>
-                    {tablesRaw?.map((t) => (
-                      <option
-                        key={t.id}
-                        value={t.id}
-                        className={t.status === "OCCUPIED" ? "text-gray-400" : ""}
-                      >
-                        {t.name} - {t.zone?.name}{" "}
-                        {t.status === "OCCUPIED" ? "(Occupied)" : `(${t.capacity})`}
-                      </option>
-                    ))}
-                  </select>
-                  <ChevronDown
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none"
-                    size={15}
-                  />
-                </div>
 
-                {/* Seat Count Input */}
-                <div className="bg-white px-3 py-2.5 rounded-xl border border-gray-200 flex items-center gap-2">
-                  <div className="w-5 h-5 flex items-center justify-center text-gray-400 font-bold text-xs border border-gray-300 rounded">
-                    #
+                  {/* Seat Count Input */}
+                  <div className="bg-white px-3 py-2.5 rounded-xl border border-gray-200 flex items-center gap-2">
+                    <div className="w-5 h-5 flex items-center justify-center text-gray-400 font-bold text-xs border border-gray-300 rounded">
+                      #
+                    </div>
+                    <input
+                      type="number"
+                      min="1"
+                      placeholder="Number of Seats"
+                      className="w-full outline-none text-sm font-bold text-gray-800"
+                      value={seatCount}
+                      onFocus={(e) => e.target.select()}
+                      onChange={(e) => {
+                        const val = Number(e.target.value);
+                        const table = tablesRaw?.find((t) => t.id === tableId);
+                        if (table && val > table.capacity) {
+                          toast.error(
+                            `Max capacity for this table is ${table.capacity}`,
+                            {
+                              id: "capacity-warn",
+                              style: {
+                                borderRadius: "10px",
+                                background: "#333",
+                                color: "#fff",
+                              },
+                            },
+                          );
+                          setSeatCount(table.capacity);
+                        } else {
+                          setSeatCount(val);
+                        }
+                      }}
+                    />
                   </div>
-                  <input
-                    type="number"
-                    min="1"
-                    placeholder="Number of Seats"
-                    className="w-full outline-none text-sm"
-                    value={seatCount}
-                    onChange={(e) => setSeatCount(Number(e.target.value))}
-                  />
                 </div>
               </>
             )}
@@ -829,6 +847,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                       type="number"
                       value={manualCash}
                       onChange={(e) => setManualCash(e.target.value)}
+                      onFocus={(e) => e.target.select()}
                       className="w-full text-3xl font-bold text-gray-800 bg-white p-4 pl-8 rounded-xl border border-blue-100 focus:ring-2 focus:ring-blue-200 outline-none"
                       placeholder="0.00"
                       autoFocus

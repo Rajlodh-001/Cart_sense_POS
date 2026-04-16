@@ -292,17 +292,17 @@ const ItemDetailModal: React.FC<ItemDetailModalProps> = ({
   const totalPrice = item.price * item.quantity;
 
   return (
-    <div className="flex flex-col w-full max-w-[400px] mx-auto bg-white rounded-3xl overflow-hidden shadow-2xl">
+    <div className="flex flex-col w-full h-full max-h-[85vh]">
       {/* ─── HEADER ─── */}
-      <div className="relative flex items-center justify-center px-4 py-4">
-        <h3 className="text-sm font-medium text-gray-800 tracking-wide">
-          Detail Menu
+      <div className="relative flex items-center justify-center px-4 py-6 border-b border-gray-50">
+        <h3 className="text-sm font-black text-gray-900 uppercase tracking-tight">
+          Item Review
         </h3>
         <button
           onClick={handleClose}
-          className="absolute right-4 w-8 h-8 flex items-center justify-center rounded-full bg-red-50 hover:bg-red-100 transition-colors"
+          className="absolute right-4 w-10 min-h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all border border-gray-100"
         >
-          <X className="w-4 h-4 text-red-400" strokeWidth={2.5} />
+          <X className="w-5 h-5" strokeWidth={2.5} />
         </button>
       </div>
 
