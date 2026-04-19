@@ -1,9 +1,35 @@
 "use client";
 
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSessionStatus } from "@/hooks/useAuth";
 import ItemsContainer from "@/components/pos/ItemsContainer";
 import OrderContainer from "@/components/pos/OrderContainer";
+import { Loader2 } from "lucide-react";
 
 const PosPage = () => {
+  const router = useRouter();
+  const { data: session, isLoading } = useSessionStatus();
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!session?.isActivated || !session?.isLoggedIn) {
+        router.replace("/auth/login");
+      }
+    }
+  }, [session, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#F8F9FB] gap-4">
+        <Loader2 className="animate-spin text-blue-600" size={40} />
+        <p className="text-gray-500 font-medium">Verifying session...</p>
+      </div>
+    );
+  }
+
+  if (!session?.isLoggedIn) return null;
+
   return (
     <div className="min-h-screen md:h-screen w-full flex flex-col md:flex-row bg-[#f0f2f5] overflow-x-hidden">
       {/* Left — Menu (Top on Mobile, Left on Tablets/Desktop) */}
@@ -22,3 +48,4 @@ const PosPage = () => {
 };
 
 export default PosPage;
+

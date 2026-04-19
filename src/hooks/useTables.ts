@@ -16,8 +16,18 @@ export interface Table {
     id: string;
     orderTime: string;
     seatCount: number;
-    customer?: { name: string };
-    items?: { name: string; quantity: number; status: string }[];
+    notes?: string;
+    orderType?: string;
+    totalAmount?: number | string;
+    customer?: { id: string; name: string; phone?: string };
+    items?: { 
+      id: string;
+      name: string; 
+      quantity: number; 
+      status: string;
+      price?: number | string;
+      total?: number | string;
+    }[];
   }[];
   reservations?: { id: string; customerName: string; startTime: string }[];
 }

@@ -1,73 +1,14 @@
-// import Image from "next/image";
-// import imgMenu from "../../../../public/icons/menu-burger.png"
-// import imgCalendar from "../../../../public/icons/calendar-day.png"
-// import imgClock from "../../../../public/icons/clock.svg"
-// import imgPower from "../../../../public/icons/power.svg"
-// import imgPowergreen from "../../public/icons/powergreen.svg"
-
-// const TopContainer = () => {
-//   return (
-//     <div className="flex flex-row justify-between py-1 px-2 md:bg-blue-200 sm:bg-green-200 lg:bg-purple-200 xl:bg-violet-300 items-center ">
-
-//       <div className="w-full flex flex-row items-center ">
-
-//         {/* thsi is the menu */}
-//         <div className="bg-white rounded-full mx-1  h-12 w-12 flex justify-between items-center">
-//           <button className="bg-slate-200 rounded-full h-10 w-10 mx-1 font-bold flex justify-center items-center">
-
-//             <Image className="" src={imgMenu} height={20} width={20} alt=""></Image>
-//           </button>
-//         </div>
-
-//         <div className="w-full flex flex-row items-center ">
-//           <div className="bg-white rounded-full  h-12 flex justify-between items-center ">
-//             <button className="bg-slate-200 rounded-full h-10 w-10 mx-1 font-bold flex items-center justify-center">
-//               <Image src={imgCalendar} width={20} height={20} alt=""/>
-//             </button>
-//             <p className="  px-3 pr-4 font-semibold hidden lg:block xl:block text-nowrap">
-//               wed, 8 Feb 2025
-//             </p>
-//             <p className="  px-3 pr-4 font-semibold  lg:hidden xl:hidden text-nowrap ">
-//               8 Feb
-//             </p>
-//           </div>
-
-//           <p className="px-4 font-bold text-xl hidden sm:block md:block lg:block xl:block">-</p>
-
-//           <div className="bg-white rounded-full  h-12 flex justify-between items-center">
-//             <button className="bg-slate-200 rounded-full h-10 w-10 mx-1 font-bold flex justify-center items-center">
-//               <Image src={imgClock} height={20} width={20} alt=""></Image>
-//             </button>
-//             <p className="px-3 pr-4 font-semibold flex ">
-//               07:59 <span className="text-slate-400 px-1 font-normal">AM</span>
-//             </p>
-//           </div>
-//         </div>
-//       </div>
-
-//       <div className="bg-white rounded-full h-12 flex justify-between items-center">
-//         <p className="text-red-400 pl-2  hidden lg:block xl:block ">•</p>
-//         <p className=" px-3 pr-4 font-semibold text-red-500  min-w-[120px]  hidden lg:block ">
-//           Order Close
-//         </p>
-//         <button className="bg-slate-200 rounded-full h-10 w-10 mx-1 text-red-500 font-bold flex items-center justify-center">
-//           <Image src={imgPower} height={20} width={20} alt="close button"></Image>
-//         </button>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default TopContainer;
-
 "use client";
 
 import { useState, useEffect } from "react";
+import { useSelector } from "react-redux";
 import { Menu, Calendar, Clock, Power } from "lucide-react";
-import { useLogout } from "@/hooks/useAuth";
+import { RootState } from "@/store/store";
+import { useLogout } from "../../hooks/useAuth";
 import SidebarMenu from "./SidebarMenu";
 
 const TopBar = () => {
+  const user = useSelector((state: RootState) => state.user);
   const logoutMutation = useLogout();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [currentDate, setCurrentDate] = useState(new Date());
@@ -130,6 +71,19 @@ const TopBar = () => {
 
         {/* Right Corner Utilities */}
         <div className="flex items-center space-x-1.5 md:space-x-3 lg:space-x-4">
+          {/* User Info */}
+          {user.isAuthenticated && (
+            <div className="hidden sm:flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-xl border border-blue-100">
+              <div className="w-6 h-6 rounded-full bg-blue-600 flex items-center justify-center text-white text-[10px] font-black uppercase">
+                {user.name?.charAt(0)}
+              </div>
+              <div className="flex flex-col">
+                <span className="text-[10px] font-bold text-gray-400 leading-tight uppercase tracking-tighter">Cashier</span>
+                <span className="text-xs font-black text-blue-700 leading-tight truncate max-w-[80px]">{user.name}</span>
+              </div>
+            </div>
+          )}
+
           <button className="flex items-center space-x-1.5 md:space-x-2 bg-red-50 text-red-500 px-2 md:px-4 py-1.5 md:py-2 rounded-xl font-bold hover:bg-red-100 transition-colors border border-red-100 flex-shrink-0 group active:scale-95">
             <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
             <span className="hidden lg:inline text-[11px] md:text-xs lg:text-sm font-extrabold ">

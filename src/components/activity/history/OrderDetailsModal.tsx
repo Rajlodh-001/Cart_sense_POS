@@ -87,7 +87,7 @@ const OrderDetailsModal: React.FC<OrderDetailsModalProps> = ({
   }
 
   return (
-    <div className="flex flex-col w-full max-w-2xl mx-auto bg-white rounded-3xl overflow-hidden">
+    <div className="flex flex-col w-full h-full max-w-2xl mx-auto bg-white rounded-3xl overflow-hidden">
       {/* --- HEADER --- */}
       <div className="px-8 py-6 border-b border-gray-100 flex items-center justify-between bg-white sticky top-0 z-10">
         <div>

@@ -4,12 +4,17 @@ import { Plus, Edit2, Search, Filter, X, Clock, User, ChevronRight, CheckCircle2
 import Portal from "../../shared/Portal";
 
 import { useTables, Table } from "@/hooks/useTables";
+import { useUpdateOrder } from "@/hooks/useOrders";
+import PaymentModal from "@/components/activity/PaymentModal";
+import toast from "react-hot-toast";
 
 const TablesView = () => {
   const { data: dbTables, isLoading } = useTables();
   const tables: Table[] = dbTables || [];
 
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
+  const [showBillModal, setShowBillModal] = useState(false);
+  const updateOrderMutation = useUpdateOrder();
 
   // Derived Zones for "Floors" filter
   const zones = Array.from(
@@ -87,6 +92,42 @@ const TablesView = () => {
         </div>
       </div>
     );
+  };
+
+  const handleGoToBilling = () => {
+    if (selectedTable?.orders?.[0]) {
+      setShowBillModal(true);
+    }
+  };
+
+  const handleSettlement = async (details: any) => {
+    const activeOrder = selectedTable?.orders?.[0];
+    if (!activeOrder) return;
+
+    try {
+      await toast.promise(
+        updateOrderMutation.mutateAsync({
+          id: activeOrder.id,
+          data: {
+            status: "COMPLETED",
+            paymentMethod: details.paymentMethod,
+            cashReceived: details.cashReceived,
+            changeReturned: details.changeReturned,
+            notes: details.orderNote,
+          },
+        }),
+        {
+          loading: "Finalizing settlement...",
+          success: "Table settled successfully!",
+          error: "Failed to settle table.",
+        },
+      );
+
+      setShowBillModal(false);
+      setSelectedTable(null);
+    } catch (err) {
+      console.error(err);
+    }
   };
 
   return (
@@ -168,7 +209,26 @@ const TablesView = () => {
       <TableDetailModal
         table={selectedTable}
         onClose={() => setSelectedTable(null)}
+        onBilling={handleGoToBilling}
       />
+
+      {showBillModal && selectedTable?.orders?.[0] && (
+        <PaymentModal
+          totalAmount={selectedTable.orders[0].items?.reduce((acc: number, item: any) => acc + Number(item.total || 0), 0) || 0}
+          items={selectedTable.orders[0].items || []}
+          initialDetails={{
+            customer: selectedTable.orders[0].customer as any,
+            phone: selectedTable.orders[0].customer?.phone,
+            orderNote: selectedTable.orders[0].notes,
+            orderType: selectedTable.orders[0].orderType?.toLowerCase() as any,
+            tableId: selectedTable.id,
+            seatCount: selectedTable.orders[0].seatCount,
+          }}
+          showPayLater={false}
+          onClose={() => setShowBillModal(false)}
+          onConfirm={handleSettlement}
+        />
+      )}
     </div>
   );
 };
@@ -177,9 +237,11 @@ const TablesView = () => {
 const TableDetailModal = ({
   table,
   onClose,
+  onBilling,
 }: {
   table: Table | null;
   onClose: () => void;
+  onBilling: () => void;
 }) => {
   if (!table) return null;
 
@@ -322,7 +384,15 @@ const TableDetailModal = ({
             >
               Close
             </button>
-            <button className="flex-[1.5] py-4 bg-blue-600 text-white rounded-2xl font-black shadow-xl shadow-blue-100 hover:bg-blue-700 transition-all active:scale-95 flex items-center justify-center gap-2 group/btn">
+            <button
+              onClick={onBilling}
+              disabled={!activeOrder}
+              className={`flex-[1.5] py-4 rounded-2xl font-black shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 group/btn ${
+                activeOrder 
+                  ? "bg-blue-600 text-white shadow-blue-100 hover:bg-blue-700" 
+                  : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
+              }`}
+            >
               Go to Billing{" "}
               <ChevronRight
                 size={18}

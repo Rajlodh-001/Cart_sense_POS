@@ -88,7 +88,7 @@ const Modal: React.FC<ModalProps> = ({
           )}
 
           {/* Modal Body */}
-          <div className="">{children}</div>
+          <div className="flex-1 min-h-0 overflow-hidden flex flex-col">{children}</div>
         </div>
       </div>
     </Portal>

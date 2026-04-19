@@ -2,7 +2,9 @@
 
 import React, { useEffect, memo } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { useLogout } from "@/hooks/useAuth";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { useLogout } from "../../hooks/useAuth";
 import {
   X,
   ShoppingCart,
@@ -48,6 +50,7 @@ const menuItems: {
 const SidebarMenu: React.FC<SidebarMenuProps> = ({ isOpen, onClose }) => {
   const router = useRouter();
   const pathname = usePathname();
+  const user = useSelector((state: RootState) => state.user);
   const logoutMutation = useLogout();
 
   // ESC key to close
@@ -101,19 +104,19 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ isOpen, onClose }) => {
         <div className="flex items-center justify-between px-6 pt-8 pb-6">
           <div className="flex items-center gap-4">
             {/* Avatar */}
-            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200 ring-4 ring-blue-50">
-              R
+            <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-500 to-blue-700 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-blue-200 ring-4 ring-blue-50 uppercase">
+              {user.name?.charAt(0) || "U"}
             </div>
             {/* User Info */}
             <div className="flex flex-col">
               <div className="flex items-center gap-1.5">
                 <span className="font-bold text-gray-900 text-base tracking-tight">
-                  Raj Lodh
+                  {user.name || "Unknown User"}
                 </span>
                 <ChevronDown size={14} className="text-gray-400" />
               </div>
               <span className="text-xs text-blue-600 font-bold uppercase tracking-wider">
-                Store Manager
+                {user.role || "Staff"}
               </span>
             </div>
           </div>

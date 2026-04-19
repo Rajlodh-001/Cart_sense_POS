@@ -144,37 +144,37 @@
 
 
 "use client";
-import React, { useRef, useState } from 'react';
-import { Search, ChevronLeft, ChevronRight, Layout, LayoutList, X, Clock, MapPin, User } from 'lucide-react';
+import React, { useRef, useState, useMemo } from 'react';
+import { Search, ChevronLeft, ChevronRight, Layout, LayoutList, X, Clock, MapPin, User, Loader2 } from 'lucide-react';
+import { useOrders, useUpdateOrder } from '@/hooks/useOrders';
+import toast from 'react-hot-toast';
 
 // --- MOCK DATA ---
-const TRACK_ORDERS = [
-  { 
-    id: 1, name: "Mike", table: "04", status: "On Kitchen Hand", items: 4, 
-    orderList: ["1x Beef Crowich", "1x Grains Pan Bread", "1x Cheezy Sourdough", "1x Iced Latte"] 
-  },
-  { 
-    id: 2, name: "Billie", table: "04", status: "All Done", items: 6, isDone: true,
-    orderList: ["2x Chicken Parm", "1x Caesar Salad", "1x Garlic Bread", "2x Coke Zero"] 
-  },
-  { 
-    id: 3, name: "Richard", table: "05", status: "On Kitchen Hand", items: 3,
-    orderList: ["1x Mushroom Soup", "1x Grilled Salmon", "1x Lemon Tea"] 
-  },
-  { 
-    id: 4, name: "Sharon", table: "06", status: "On Kitchen Hand", items: 5,
-    orderList: ["1x Tuna Sandwich", "1x Bagel Cream Cheese", "1x Black Coffee", "1x Blueberry Muffin", "1x Water"] 
-  },
-  { 
-    id: 5, name: "Alex", table: "07", status: "On Kitchen Hand", items: 2,
-    orderList: ["1x Steak (Medium)", "1x Red Wine"] 
-  },
-];
-
 const TrackOrderSection = () => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [isVertical, setIsVertical] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<any>(null); // For Modal
+
+  // --- REAL DATA ---
+  const { data: ordersData, isLoading } = useOrders({ status: 'PENDING' });
+  const updateOrder = useUpdateOrder();
+
+  const orders = useMemo(() => ordersData?.orders || [], [ordersData]);
+
+  const handleMarkAsDone = async (orderId: string) => {
+    try {
+      await updateOrder.mutateAsync({
+        id: orderId,
+        status: 'COMPLETED',
+        paymentMethod: 'CARD', // AS PER USER REQUEST
+        notes: 'KDS COMPLETE', // AS PER USER REQUEST
+      });
+      toast.success("Order completed and settled (Card)");
+      setSelectedOrder(null);
+    } catch (error) {
+      toast.error("Failed to complete order");
+    }
+  };
 
   // Scroll Logic
   const scroll = (direction: 'left' | 'right') => {
@@ -230,18 +230,30 @@ const TrackOrderSection = () => {
             }
           `}
         >
-          {TRACK_ORDERS.map((order) => (
-            <div 
-              key={order.id} 
-              className={`flex-shrink-0 transition-all duration-300 ${isVertical ? 'w-full' : 'w-72 md:w-80'}`}
-            >
-              <TrackCard 
-                data={order} 
-                isVertical={isVertical} 
-                onOpenModal={() => setSelectedOrder(order)} 
-              />
+             {isLoading ? (
+            <div className="flex-1 flex items-center justify-center py-20">
+               <Loader2 className="animate-spin text-blue-600" size={32} />
+               <span className="ml-3 text-gray-500 font-medium font-bold">Loading active orders...</span>
             </div>
-          ))}
+          ) : orders.length > 0 ? (
+            orders.map((order: any) => (
+              <div 
+                key={order.id} 
+                className={`flex-shrink-0 transition-all duration-300 ${isVertical ? 'w-full' : 'w-72 md:w-80'}`}
+              >
+                <TrackCard 
+                  data={order} 
+                  isVertical={isVertical} 
+                  onOpenModal={() => setSelectedOrder(order)} 
+                />
+              </div>
+            ))
+          ) : (
+             <div className="flex-1 flex flex-col items-center justify-center py-20 text-gray-400">
+                <span className="text-4xl">🍳</span>
+                <p className="mt-4 font-bold">No active orders in kitchen</p>
+             </div>
+          )}
         </div>
       </div>
 
@@ -250,6 +262,8 @@ const TrackOrderSection = () => {
         <OrderDetailModal 
           order={selectedOrder} 
           onClose={() => setSelectedOrder(null)} 
+          onMarkAsDone={handleMarkAsDone}
+          isProcessing={updateOrder.isPending}
         />
       )}
 
@@ -281,7 +295,7 @@ const TrackCard = ({ data, isVertical, onOpenModal }: any) => {
         <span className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg whitespace-nowrap ${
           isDone ? 'bg-emerald-50 text-emerald-600' : 'bg-orange-50 text-orange-600'
         }`}>
-          {status}
+          {isDone ? 'Completed' : 'PENDING'}
         </span>
       </div>
 
@@ -319,16 +333,17 @@ const TrackCard = ({ data, isVertical, onOpenModal }: any) => {
 
       {/* Footer */}
       <div className="mt-auto pt-2 flex justify-between items-center text-xs font-medium text-gray-400">
-        <span className="flex items-center gap-1"><Clock size={12}/> 10:00 AM</span>
-        <span className="bg-gray-50 px-2 py-1 rounded text-gray-600 font-bold">{items} Items</span>
+        <span className="flex items-center gap-1"><Clock size={12}/> {new Date(data.orderTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+        <span className="bg-gray-50 px-2 py-1 rounded text-gray-600 font-bold">{items?.length || 0} Items</span>
       </div>
     </div>
   );
 };
 
 // --- COMPONENT: Modal ---
-const OrderDetailModal = ({ order, onClose }: any) => {
+const OrderDetailModal = ({ order, onClose, onMarkAsDone, isProcessing }: any) => {
   if (!order) return null;
+  const items = order.items || [];
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
@@ -362,27 +377,31 @@ const OrderDetailModal = ({ order, onClose }: any) => {
           </div>
 
           <ul className="space-y-3">
-            {order.orderList.map((item: string, i: number) => (
+            {items.map((item: any, i: number) => (
               <li key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <span className="text-sm font-medium text-gray-700">{item}</span>
-                <span className="text-xs font-bold text-gray-400">x1</span>
+                <span className="text-sm font-medium text-gray-700">{item.name}</span>
+                <span className="text-xs font-bold text-gray-400">x{item.quantity}</span>
               </li>
             ))}
           </ul>
           
           <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
             <span className="text-gray-500 font-medium">Total Items</span>
-            <span className="text-xl font-bold text-gray-800">{order.items}</span>
+            <span className="text-xl font-bold text-gray-800">{items.length}</span>
           </div>
         </div>
 
         {/* Modal Footer */}
         <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
-           <button onClick={onClose} className="flex-1 py-3 text-sm font-bold text-gray-500 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 transition">
+           <button onClick={onClose} disabled={isProcessing} className="flex-1 py-3 text-sm font-bold text-gray-500 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 transition disabled:opacity-50">
              Close
            </button>
-           <button className="flex-1 py-3 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition">
-             Mark as Done
+           <button 
+            disabled={isProcessing}
+            onClick={() => onMarkAsDone(order.id)}
+            className="flex-1 py-3 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+           >
+             {isProcessing ? <Loader2 className="animate-spin" size={16} /> : "Mark as Done"}
            </button>
         </div>
       </div>

@@ -209,6 +209,7 @@ import {
   ArrowRight,
   RotateCcw,
   Coins,
+  Clock,
   ChevronDown,
   Phone,
   PlusCircle,
@@ -216,6 +217,8 @@ import {
   FileText,
   QrCode,
   Scan,
+  UtensilsCrossed,
+  Layers,
 } from "lucide-react";
 import {
   selectOrderInfo,
@@ -227,6 +230,7 @@ import { useTables } from "@/hooks/useTables";
 import { useCustomerByPhone, Customer } from "@/hooks/useCustomers";
 import CreateCustomerModal from "@/components/pos/CreateCustomerModal";
 import CustomDropdown from "@/components/shared/CustomDropdown";
+import Portal from "@/components/shared/Portal";
 import type { OrderType } from "@/app/(dashboard)/pos/posSlice";
 
 import toast from "react-hot-toast";
@@ -235,12 +239,25 @@ interface PaymentModalProps {
   totalAmount: number;
   onClose: () => void;
   onConfirm: (paymentDetails: any) => void;
+  showPayLater?: boolean;
+  items?: any[];
+  initialDetails?: {
+    customer?: Customer;
+    phone?: string;
+    orderNote?: string;
+    orderType?: "dine-in" | "take-away";
+    tableId?: string | null;
+    seatCount?: number;
+  };
 }
 
 const PaymentModal: React.FC<PaymentModalProps> = ({
   totalAmount,
   onClose,
   onConfirm,
+  showPayLater = true,
+  items = [],
+  initialDetails,
 }) => {
   const dispatch = useDispatch();
   const orderInfo = useSelector(selectOrderInfo);
@@ -250,7 +267,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     orderInfo.orderType === "timed-order" ? "take-away" : orderInfo.orderType,
   );
   const [paymentMethod, setPaymentMethod] = useState<
-    "CASH" | "CARD" | "QR" | "OTHER"
+    "CASH" | "CARD" | "QR" | "OTHER" | "PAY_LATER"
   >("CASH");
   const [tableId, setTableId] = useState<string | null>(orderInfo.tableId);
   const [phone, setPhone] = useState("");
@@ -297,11 +314,23 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
 
   // Auto-select first table if Dine-In is selected and no table is set
   useEffect(() => {
+    if (initialDetails) {
+      if (initialDetails.customer) setCustomer(initialDetails.customer);
+      if (initialDetails.phone) setPhone(initialDetails.phone);
+      if (initialDetails.orderNote) setOrderNote(initialDetails.orderNote);
+      if (initialDetails.orderType) setOrderType(initialDetails.orderType);
+      if (initialDetails.tableId) setTableId(initialDetails.tableId);
+      if (initialDetails.seatCount) setSeatCount(initialDetails.seatCount);
+    }
+  }, [initialDetails]);
+
+  useEffect(() => {
     if (
       orderType === "dine-in" &&
       !tableId &&
       tablesRaw &&
-      tablesRaw.length > 0
+      tablesRaw.length > 0 &&
+      !initialDetails?.tableId
     ) {
       // Find first available table if possible
       const available = tablesRaw.find((t) => t.status === "AVAILABLE");
@@ -328,11 +357,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     return acc + Number(value) * count;
   }, 0);
 
+  // Guarantee totalAmount is a number
+  const numericTotal = Number(totalAmount || 0);
+
   // Determine actual cash received based on mode
   const cashReceived = useDenominations
     ? billsTotal
     : parseFloat(manualCash) || 0;
-  const change = cashReceived - totalAmount;
+  const change = cashReceived - numericTotal;
 
   // Handler: Add Bill
   const addBill = (amount: number) => {
@@ -349,20 +381,22 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       orderType,
       tableId,
       seatCount,
-      paymentMethod,
+      paymentMethod: paymentMethod === "PAY_LATER" ? undefined : paymentMethod,
       customerId: customer?.id,
       customerName: customer?.name || "Guest",
       totalAmount,
       cashReceived: paymentMethod === "CASH" ? cashReceived : undefined,
       changeReturned: paymentMethod === "CASH" ? change : undefined,
       orderNote,
+      isPayLater: paymentMethod === "PAY_LATER",
     });
   };
 
   // ─── Component Rendering ───
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto">
+    <Portal>
+      <div className="fixed inset-0 z-[1200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+        <div className="bg-white w-full max-w-4xl rounded-3xl shadow-2xl overflow-hidden flex flex-col md:flex-row h-[90vh] md:h-auto">
         {/* --- LEFT SIDE: ORDER DETAILS --- */}
         <div className="w-full md:w-[38%] bg-gray-50 p-6 flex flex-col gap-5 border-r border-gray-100 overflow-y-auto">
           <h2 className="text-xl font-bold text-gray-800">Order Details</h2>
@@ -508,6 +542,41 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               />
             </div>
           </div>
+
+          {/* Order Summary (New) */}
+          {items.length > 0 && (
+            <div className="flex-1 flex flex-col min-h-0 min-w-0 mt-2">
+              <div className="flex items-center gap-2 mb-3 text-gray-500">
+                <Layers size={16} />
+                <h3 className="text-xs font-black uppercase tracking-widest">Order Summary</h3>
+                <span className="ml-auto text-[10px] font-bold bg-gray-200 text-gray-500 px-2 py-0.5 rounded-full">{items.length} Items</span>
+              </div>
+              
+              <div className="flex-1 overflow-y-auto space-y-2 pr-1 custom-scrollbar">
+                {items.map((item, idx) => (
+                  <div key={idx} className="bg-white p-3 rounded-xl border border-gray-100 flex items-center justify-between group hover:border-blue-100 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-lg bg-gray-50 flex items-center justify-center text-gray-400 font-bold text-xs group-hover:bg-blue-50 group-hover:text-blue-600">
+                        {item.quantity}x
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-gray-800 leading-none">{item.name}</p>
+                        {item.note && <p className="text-[10px] text-gray-400 mt-1 italic line-clamp-1">{item.note}</p>}
+                      </div>
+                    </div>
+                    <span className="text-xs font-black text-gray-400 group-hover:text-blue-600">${Number(item.total || 0).toFixed(2)}</span>
+                  </div>
+                ))}
+              </div>
+              
+              <div className="mt-4 pt-4 border-t border-gray-200 border-dashed">
+                <div className="flex justify-between items-center text-gray-400 text-xs font-bold uppercase tracking-wider">
+                  <span>Grand Total</span>
+                  <span className="text-gray-800 text-base font-black">${numericTotal.toFixed(2)}</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* --- RIGHT SIDE: PAYMENT & CALCULATOR --- */}
@@ -524,7 +593,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
             <p className="text-sm text-gray-400">
               Total Due:{" "}
               <span className="text-blue-600 font-bold text-lg">
-                ${totalAmount.toFixed(2)}
+                ${numericTotal.toFixed(2)}
               </span>
             </p>
           </div>
@@ -555,6 +624,14 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
               active={paymentMethod === "OTHER"}
               onClick={() => setPaymentMethod("OTHER")}
             />
+            {orderType === "dine-in" && showPayLater && (
+              <PaymentOption
+                icon={<Clock />}
+                label="Pay Later"
+                active={paymentMethod === "PAY_LATER"}
+                onClick={() => setPaymentMethod("PAY_LATER")}
+              />
+            )}
           </div>
 
           {/* --- QR CODE PAYMENT UI --- */}
@@ -886,18 +963,21 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 ${
                   paymentMethod === "CASH" && change < 0
                     ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-                    : "bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700 active:scale-95"
+                    : paymentMethod === "PAY_LATER"
+                      ? "bg-amber-500 text-white shadow-amber-100 hover:bg-amber-600 active:scale-95"
+                      : "bg-blue-600 text-white shadow-blue-200 hover:bg-blue-700 active:scale-95"
                 }
               `}
             >
-              Complete Payment <ArrowRight size={18} />
+              {paymentMethod === "PAY_LATER" ? "Place Order (Tab)" : "Complete Payment"} <ArrowRight size={18} />
             </button>
           </div>
         </div>
       </div>
+    </div>
 
-      {showCreateModal && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+    {showCreateModal && (
+        <div className="fixed inset-0 z-[1300] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
           <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden p-6 animate-in zoom-in-95 duration-200">
             <CreateCustomerModal
               phone={phone}
@@ -910,7 +990,7 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
           </div>
         </div>
       )}
-    </div>
+    </Portal>
   );
 };
 
