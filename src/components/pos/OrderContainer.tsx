@@ -12,10 +12,13 @@ import {
   setOrderType as setReduxOrderType,
   setTableId as setReduxTableId,
   clearCart,
+  setCoupon,
+  setDiscountAmount,
 } from "@/app/(dashboard)/pos/posSlice";
 import type { OrderType } from "@/app/(dashboard)/pos/posSlice";
 import { useCreateOrder, CreateOrderPayload } from "@/hooks/useOrders";
 import { useTables } from "@/hooks/useTables";
+import { useVerifyCoupon } from "@/hooks/useCoupons";
 
 import {
   FileText,
@@ -30,6 +33,8 @@ import {
 } from "lucide-react";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import Modal from "@/components/shared/Modal";
+import CreateCustomerModal from "./CreateCustomerModal";
+import { useLocationSettings, useOrganizationSettings } from "@/hooks/useSettings";
 import ItemDetailModal from "./ItemDetailModal";
 import PaymentModal from "@/components/activity/PaymentModal";
 import toast from "react-hot-toast";
@@ -54,6 +59,7 @@ const OrderContainer = () => {
   // Queries & Mutations
   const createOrderMutation = useCreateOrder();
   const { data: tablesRaw, isLoading: tablesLoading } = useTables();
+  const verifyCouponMutation = useVerifyCoupon();
 
   // Map Redux OrderType to dropdown ID
   const orderTypeToId: Record<OrderType, number> = {
@@ -84,11 +90,27 @@ const OrderContainer = () => {
   const [selectedItem, setSelectedItem] = useState<number | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [showPromoInput, setShowPromoInput] = useState(false);
+
+  // Hooks
+  const { data: locationSettings } = useLocationSettings();
+  const { data: orgSettings } = useOrganizationSettings();
 
   // Calculations
-  const tax = totalPrice * 0;
-  const discount = hasItems ? 0 : 0;
-  const finalTotal = totalPrice + tax - discount;
+  const discount = orderInfo.discountAmount || 0;
+  const taxableAmount = Math.max(0, totalPrice - discount);
+
+  // Implement Location/Global Tax Architecture
+  const taxRate = Number(locationSettings?.taxRate || 0);
+  const isTaxInclusive = orgSettings?.taxType === 'INCLUSIVE';
+  
+  const tax = isTaxInclusive 
+    ? taxableAmount - (taxableAmount / (1 + taxRate / 100))
+    : taxableAmount * (taxRate / 100);
+
+  const finalTotal = isTaxInclusive 
+    ? taxableAmount 
+    : taxableAmount + tax;
 
   // Auto-select first table if Dine-In is selected and no table is set
   useEffect(() => {
@@ -141,14 +163,14 @@ const OrderContainer = () => {
         tableId: details.tableId || orderInfo.tableId || undefined,
         seatCount: details.seatCount || undefined,
         subTotal: totalPrice, // As requested
-        tax: 0, // As requested
         totalAmt: finalTotal,
         type: dbTypeMap[details.orderType] || "DINE_IN",
         paymentMethod: details.paymentMethod,
         cashReceived: details.cashReceived,
-        changeReturned: details.changeReturned,
         notes: details.orderNote,
-        discount: discount,
+        discount: details.discount || discount,
+        tax: Number(tax.toFixed(2)),
+        coupon: details.coupon || orderInfo.coupon || undefined,
         items: cartItems.map((item) => {
           const modifiersText = item.modifiers?.length
             ? `Modifiers: ${item.modifiers.join(", ")}`
@@ -349,13 +371,57 @@ const OrderContainer = () => {
 
         {/* Action Buttons: Promo & QRIS */}
         <div className="flex space-x-3 mb-3">
-          <button className="flex-1 flex items-center justify-between px-4 py-2.5 bg-green-50 border border-green-200 rounded-xl text-green-700 font-medium hover:bg-green-100 transition-colors">
-            <span className="text-sm">Promo</span>
-            <div className="w-7 h-7 rounded-full bg-green-200 flex items-center justify-center">
-              {/* <Percent size={10} className="text-green-700" /> */}
-              <BadgePercent size={24} className="text-green-700" />
+          {!showPromoInput ? (
+            <button
+              onClick={() => setShowPromoInput(true)}
+              className="flex-1 flex items-center justify-between px-4 py-2.5 bg-green-50 border border-green-200 rounded-xl text-green-700 font-medium hover:bg-green-100 transition-colors"
+            >
+              <span className="text-sm">Promo</span>
+              <div className="w-7 h-7 rounded-full bg-green-200 flex items-center justify-center">
+                <BadgePercent size={16} className="text-green-700" />
+              </div>
+            </button>
+          ) : (
+            <div className="flex-1 flex items-center bg-green-50 border border-green-300 rounded-xl overflow-hidden focus-within:ring-2 focus-within:ring-green-400 transition-shadow">
+              <input
+                type="text"
+                placeholder="Enter Promo"
+                value={orderInfo.coupon || ""}
+                onChange={(e) => dispatch(setCoupon(e.target.value.toUpperCase()))}
+                onKeyDown={(e) => {
+                  if (e.key === "Escape") setShowPromoInput(false);
+                }}
+                className="flex-1 bg-transparent px-3 py-2.5 text-sm text-green-800 font-bold placeholder-green-400 focus:outline-none uppercase w-full min-w-0"
+                autoFocus
+              />
+              <button
+                disabled={verifyCouponMutation.isPending}
+                onClick={async () => {
+                  if (!orderInfo.coupon) setShowPromoInput(false);
+                  else {
+                    toast.loading("Verifying...", { id: "verify-coupon" });
+                    try {
+                      const res = await verifyCouponMutation.mutateAsync({
+                        code: orderInfo.coupon,
+                        subTotal: totalPrice,
+                      });
+                      if (res.valid) {
+                        toast.success(`Discount ${res.discountAmount} applied!`, { id: "verify-coupon" });
+                        dispatch(setDiscountAmount(res.discountAmount));
+                      }
+                    } catch (err: any) {
+                      toast.error(err.response?.data?.message || "Invalid coupon", { id: "verify-coupon" });
+                      dispatch(setCoupon(null));
+                      dispatch(setDiscountAmount(0));
+                    }
+                  }
+                }}
+                className="px-3 bg-green-600 text-white font-bold text-xs h-full min-h-[44px] hover:bg-green-700 transition-colors disabled:opacity-50"
+              >
+                Apply
+              </button>
             </div>
-          </button>
+          )}
 
           <button className="flex-1 flex items-center justify-center px-4 py-2.5 bg-white border-2 border-blue-100 rounded-xl text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors">
             QRIS
@@ -388,7 +454,7 @@ const OrderContainer = () => {
         className="md:max-w-md w-full"
       >
         {selectedItem !== null && (
-          <ItemDetailModal itemId={selectedItem} onClose={closeModal} />
+          <ItemDetailModal itemId={selectedItem as number} onClose={closeModal} />
         )}
       </Modal>
 

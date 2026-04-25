@@ -3,32 +3,61 @@ import { LucideIcon } from "lucide-react";
 
 interface FormToggleProps {
   label: string;
-  icon?: LucideIcon;
+  icon: LucideIcon;
   checked: boolean;
   onChange: (checked: boolean) => void;
-  description: string;
+  description?: string;
+  required?: boolean;
 }
 
-export const FormToggle: React.FC<FormToggleProps> = ({ label, icon: Icon, checked, onChange, description }) => (
-  <div 
-    onClick={() => onChange(!checked)}
-    className={`p-6 rounded-[2.5rem] border transition-all cursor-pointer flex items-center justify-between group ${
-      checked ? 'bg-gray-900 border-gray-900 shadow-xl' : 'bg-white border-gray-100 hover:border-gray-200'
-    }`}
-  >
-    <div className="flex items-center gap-4">
-      <div className={`w-10 h-10 rounded-2xl flex items-center justify-center transition-colors ${
-        checked ? 'bg-white/10 text-white' : 'bg-gray-50 text-gray-400 group-hover:text-gray-900'
-      }`}>
-        {Icon && <Icon size={18} strokeWidth={2.5} />}
+export const FormToggle: React.FC<FormToggleProps> = ({
+  label,
+  icon: Icon,
+  checked,
+  onChange,
+  description,
+  required,
+}) => {
+  return (
+    <div className="flex flex-col gap-2.5 group/field w-full">
+      {/* Label Layer */}
+      <div className="flex items-center justify-between px-1">
+        <label className="text-[11px] font-black text-gray-900 uppercase tracking-widest flex items-center gap-2 group-focus-within/field:text-purple-600 transition-colors">
+          {label} {required && <span className="text-purple-500 font-bold">*</span>}
+        </label>
       </div>
-      <div>
-        <h5 className={`font-black uppercase tracking-widest text-[10px] ${checked ? 'text-white' : 'text-gray-900'}`}>{label}</h5>
-        <p className={`text-[10px] font-bold mt-0.5 ${checked ? 'text-gray-400' : 'text-gray-400 group-hover:text-gray-500'}`}>{description}</p>
+
+      {/* Product Modal Style Toggle (The Segmented Control) */}
+      <div className="bg-gray-100 rounded-[1.25rem] p-1.5 flex items-center w-full min-h-[64px] border-2 border-transparent focus-within:border-purple-500 transition-all">
+        <button
+          type="button"
+          onClick={() => onChange(true)}
+          className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all ${
+            checked 
+            ? "bg-white text-emerald-600 shadow-md scale-100" 
+            : "text-gray-400 hover:text-gray-600 scale-95"
+          }`}
+        >
+          Active / Enabled
+        </button>
+        <button
+          type="button"
+          onClick={() => onChange(false)}
+          className={`flex-1 py-3 text-[10px] font-black uppercase tracking-[0.2em] rounded-xl transition-all ${
+            !checked 
+            ? "bg-white text-red-500 shadow-md scale-100" 
+            : "text-gray-400 hover:text-gray-600 scale-95"
+          }`}
+        >
+          Disabled / Hidden
+        </button>
       </div>
+
+      {description && (
+        <p className="text-[10px] font-black text-gray-400 pl-1 leading-relaxed uppercase tracking-tighter opacity-70">
+          {description}
+        </p>
+      )}
     </div>
-    <div className={`w-14 h-8 rounded-full p-1.5 transition-colors relative ${checked ? 'bg-purple-500' : 'bg-gray-100'}`}>
-      <div className={`w-5 h-5 bg-white rounded-full shadow-md transition-all duration-300 ${checked ? 'translate-x-[24px]' : 'translate-x-0'}`} />
-    </div>
-  </div>
-);
+  );
+};

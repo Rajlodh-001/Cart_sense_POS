@@ -225,6 +225,8 @@ import {
   setOrderType as setReduxOrderType,
   setTableId as setReduxTableId,
   setCustomerName as setReduxCustomerName,
+  setCoupon,
+  setDiscountAmount,
 } from "@/app/(dashboard)/pos/posSlice";
 import { useTables } from "@/hooks/useTables";
 import { useCustomerByPhone, Customer } from "@/hooks/useCustomers";
@@ -232,6 +234,7 @@ import CreateCustomerModal from "@/components/pos/CreateCustomerModal";
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import Portal from "@/components/shared/Portal";
 import type { OrderType } from "@/app/(dashboard)/pos/posSlice";
+import { useVerifyCoupon } from "@/hooks/useCoupons";
 
 import toast from "react-hot-toast";
 
@@ -275,8 +278,11 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [seatCount, setSeatCount] = useState<number>(1);
   const [orderNote, setOrderNote] = useState<string>("");
+  const [couponCode, setCouponCode] = useState<string>(orderInfo.coupon || "");
+  const [localDiscount, setLocalDiscount] = useState<number>(orderInfo.discountAmount || 0);
 
   const { data: tablesRaw } = useTables();
+  const verifyCouponMutation = useVerifyCoupon();
   const {
     data: customerData,
     isFetching: isSearching,
@@ -357,8 +363,8 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
     return acc + Number(value) * count;
   }, 0);
 
-  // Guarantee totalAmount is a number
-  const numericTotal = Number(totalAmount || 0);
+  // Guarantee totalAmount is a number and subtract any localized coupon
+  const numericTotal = Math.max(0, Number(totalAmount || 0) - localDiscount);
 
   // Determine actual cash received based on mode
   const cashReceived = useDenominations
@@ -384,11 +390,13 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
       paymentMethod: paymentMethod === "PAY_LATER" ? undefined : paymentMethod,
       customerId: customer?.id,
       customerName: customer?.name || "Guest",
-      totalAmount,
+      totalAmount: numericTotal,
+      discount: localDiscount,
       cashReceived: paymentMethod === "CASH" ? cashReceived : undefined,
       changeReturned: paymentMethod === "CASH" ? change : undefined,
       orderNote,
       isPayLater: paymentMethod === "PAY_LATER",
+      coupon: couponCode || undefined,
     });
   };
 
@@ -529,6 +537,47 @@ const PaymentModal: React.FC<PaymentModalProps> = ({
                 </div>
               </>
             )}
+
+            {/* Coupon Code Input */}
+            <div className="bg-white px-3 py-2.5 rounded-xl border border-gray-200 focus-within:border-green-400 focus-within:ring-2 focus-within:ring-green-100 transition-all flex items-center gap-2">
+              <Tag className="text-gray-400" size={16} />
+              <input
+                type="text"
+                placeholder="Promo / Coupon Code"
+                className="w-full outline-none text-sm font-medium uppercase placeholder-gray-400"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+              />
+              {couponCode && (
+                <button
+                  disabled={verifyCouponMutation.isPending}
+                  onClick={async () => {
+                    toast.loading("Verifying...", { id: "verify-coupon-modal" });
+                    try {
+                      const res = await verifyCouponMutation.mutateAsync({
+                        code: couponCode,
+                        subTotal: totalAmount, // using numericTotal or totalAmount passed from props
+                      });
+                      if (res.valid) {
+                        toast.success(`Discount ${res.discountAmount} applied!`, { id: "verify-coupon-modal" });
+                        setLocalDiscount(res.discountAmount);
+                        dispatch(setCoupon(couponCode));
+                        dispatch(setDiscountAmount(res.discountAmount));
+                      }
+                    } catch (err: any) {
+                      toast.error(err.response?.data?.message || "Invalid coupon", { id: "verify-coupon-modal" });
+                      setCouponCode("");
+                      setLocalDiscount(0);
+                      dispatch(setCoupon(null));
+                      dispatch(setDiscountAmount(0));
+                    }
+                  }}
+                  className="text-[10px] font-bold text-green-600 bg-green-50 px-2 py-1 rounded cursor-pointer hover:bg-green-100 transition-colors disabled:opacity-50"
+                >
+                  APPLY
+                </button>
+              )}
+            </div>
 
             {/* Order / Customer Note */}
             <div className="bg-white px-3 py-2.5 rounded-xl border border-gray-200 flex items-start gap-2">

@@ -5,7 +5,10 @@ export interface UserState {
   name: string | null;
   email: string | null;
   avatar: string | null;
-  role: string | null;
+  role: any | null;
+  roleId: string | null;
+  permissions: string[];
+  preferences: any;
   isAuthenticated: boolean;
 }
 
@@ -15,6 +18,9 @@ const initialState: UserState = {
   email: null,
   avatar: null,
   role: null,
+  roleId: null,
+  permissions: [],
+  preferences: null,
   isAuthenticated: false,
 };
 
@@ -31,6 +37,9 @@ const userSlice = createSlice({
       state.email = action.payload.email;
       state.avatar = action.payload.avatar;
       state.role = action.payload.role;
+      state.roleId = action.payload.roleId;
+      state.permissions = action.payload.permissions;
+      state.preferences = action.payload.preferences;
       state.isAuthenticated = true;
     },
     clearUser: (state) => {
@@ -39,6 +48,9 @@ const userSlice = createSlice({
       state.email = null;
       state.avatar = null;
       state.role = null;
+      state.roleId = null;
+      state.permissions = [];
+      state.preferences = null;
       state.isAuthenticated = false;
     },
   },

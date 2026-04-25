@@ -273,7 +273,9 @@ const TrackOrderSection = () => {
 
 // --- COMPONENT: Track Card ---
 const TrackCard = ({ data, isVertical, onOpenModal }: any) => {
-  const { name, table, status, items, isDone, orderList } = data;
+  const { name, table, status, isDone } = data;
+  const items = data.items || [];
+  const orderList = items.map((item: any) => `${item.quantity}x ${item.name}`);
 
   return (
     <div className={`
@@ -285,11 +287,11 @@ const TrackCard = ({ data, isVertical, onOpenModal }: any) => {
       <div className="flex justify-between items-start">
         <div>
           <h4 className="font-bold text-gray-800 text-lg flex items-center gap-2">
-            {name}
+            {data.customer?.name || data.name || "Walk-in"}
             {isVertical && <span className="text-xs font-normal text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">#{data.id}</span>}
           </h4>
           <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
-             <span>Table: {table}</span> • <span>Dine In</span>
+             <span>Table: {typeof table === 'object' ? table?.name : (table || 'N/A')}</span> • <span>Dine In</span>
           </div>
         </div>
         <span className={`text-[10px] font-bold px-2.5 py-1.5 rounded-lg whitespace-nowrap ${
@@ -358,9 +360,9 @@ const OrderDetailModal = ({ order, onClose, onMarkAsDone, isProcessing }: any) =
             <X size={18} className="text-white" />
           </button>
           
-          <h2 className="text-2xl font-bold mb-1">{order.name}</h2>
+          <h2 className="text-2xl font-bold mb-1">{order.customer?.name || "Walk-in"}</h2>
           <div className="flex gap-4 text-blue-100 text-sm">
-            <span className="flex items-center gap-1"><MapPin size={14}/> Table {order.table}</span>
+            <span className="flex items-center gap-1"><MapPin size={14}/> Table {typeof order.table === 'object' ? order.table?.name : (order.table || 'N/A')}</span>
             <span className="flex items-center gap-1"><User size={14}/> Dine In</span>
           </div>
         </div>

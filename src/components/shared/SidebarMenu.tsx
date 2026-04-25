@@ -116,7 +116,7 @@ const SidebarMenu: React.FC<SidebarMenuProps> = ({ isOpen, onClose }) => {
                 <ChevronDown size={14} className="text-gray-400" />
               </div>
               <span className="text-xs text-blue-600 font-bold uppercase tracking-wider">
-                {user.role || "Staff"}
+                {user.role?.name || "Staff"}
               </span>
             </div>
           </div>

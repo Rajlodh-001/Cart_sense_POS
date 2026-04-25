@@ -22,6 +22,8 @@ export interface OrderInfo {
   tableId: string | null;
   capacity: number | null;
   customerName: string;
+  coupon: string | null;
+  discountAmount: number;
 }
 
 interface CartState {
@@ -36,6 +38,8 @@ const initialState: CartState = {
     tableId: null,
     capacity: null,
     customerName: "",
+    coupon: null,
+    discountAmount: 0,
   },
 };
 
@@ -119,6 +123,18 @@ const cartSlice = createSlice({
     clearCart: (state) => {
       state.items = [];
       state.orderInfo.customerName = "";
+      state.orderInfo.coupon = null;
+      state.orderInfo.discountAmount = 0;
+    },
+    setCoupon: (state, action: PayloadAction<string | null>) => {
+      state.orderInfo.coupon = action.payload;
+    },
+    setDiscountAmount: (state, action: PayloadAction<number>) => {
+      state.orderInfo.discountAmount = action.payload;
+    },
+    clearCoupon: (state) => {
+      state.orderInfo.coupon = null;
+      state.orderInfo.discountAmount = 0;
     },
   },
 });
@@ -156,5 +172,8 @@ export const {
   setTableId,
   setCustomerName,
   clearCart,
+  setCoupon,
+  clearCoupon,
+  setDiscountAmount,
 } = cartSlice.actions;
 export default cartSlice.reducer;

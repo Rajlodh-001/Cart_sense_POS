@@ -78,7 +78,9 @@ const TopBar = () => {
                 {user.name?.charAt(0)}
               </div>
               <div className="flex flex-col">
-                <span className="text-[10px] font-bold text-gray-400 leading-tight uppercase tracking-tighter">Cashier</span>
+                <span className="text-[10px] font-bold text-gray-400 leading-tight uppercase tracking-tighter">
+                  {user.role?.name || "Staff"}
+                </span>
                 <span className="text-xs font-black text-blue-700 leading-tight truncate max-w-[80px]">{user.name}</span>
               </div>
             </div>
