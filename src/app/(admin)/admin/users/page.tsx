@@ -17,6 +17,12 @@ import {
   Layers,
   Settings,
   Fingerprint,
+  Zap,
+  LineChart,
+  Receipt,
+  Utensils,
+  BarChart3,
+  Globe,
 } from "lucide-react";
 import {
   useUsers,
@@ -25,14 +31,18 @@ import {
   useRoles,
   useDeleteRole,
   RoleData,
+  usePermissions,
+  useDeletePermission,
+  Permission,
 } from "@/hooks/useUsers";
 import Modal from "@/components/shared/Modal";
 import AddUserModal from "@/components/admin/users/AddUserModal";
 import AddRoleModal from "@/components/admin/users/AddRoleModal";
+import AddPermissionModal from "@/components/admin/users/AddPermissionModal";
 import { IdentityMatrix } from "@/components/admin/users/IdentityMatrix";
 import toast from "react-hot-toast";
 
-type TabTab = "USERS" | "ROLES";
+type TabTab = "USERS" | "ROLES" | "PERMISSIONS" | "INSIGHTS";
 
 export default function UsersPage() {
   const [activeTab, setActiveTab] = useState<TabTab>("USERS");
@@ -47,18 +57,25 @@ export default function UsersPage() {
   const [isRoleModalOpen, setIsRoleModalOpen] = useState(false);
   const [editingRole, setEditingRole] = useState<RoleData | null>(null);
 
+  // Permission Modals
+  const [isPermissionModalOpen, setIsPermissionModalOpen] = useState(false);
+  const [editingPermission, setEditingPermission] = useState<Permission | null>(null);
+
   const { data: usersData, isLoading: usersLoading } = useUsers({
     search,
     page,
   });
-  const { data: rolesData, isLoading: rolesLoading } = useRoles();
+  const { data: rolesData, isLoading: rolesLoading } = useRoles(search);
+  const { data: permissionsData, isLoading: permissionsLoading } = usePermissions(search);
 
   const deleteUser = useDeleteUser();
   const deleteRole = useDeleteRole();
+  const deletePermission = useDeletePermission();
 
   const users = usersData?.data || [];
   const totalUsers = usersData?.meta?.total || 0;
   const roles = rolesData || [];
+  const permissions = permissionsData || [];
 
   const handleEditUser = (user: User) => {
     setEditingUser(user);
@@ -93,6 +110,21 @@ export default function UsersPage() {
         loading: "Deleting role...",
         success: "Role deleted",
         error: "Failed to delete role",
+      });
+    }
+  };
+
+  const handleEditPermission = (perm: Permission) => {
+    setEditingPermission(perm);
+    setIsPermissionModalOpen(true);
+  };
+
+  const handleDeletePermission = async (perm: Permission) => {
+    if (window.confirm(`Are you sure you want to delete the capability "${perm.name}"?`)) {
+      await toast.promise(deletePermission.mutateAsync(perm.id), {
+        loading: "Deleting capability...",
+        success: "Capability removed",
+        error: "Failed to delete capability",
       });
     }
   };
@@ -156,15 +188,21 @@ export default function UsersPage() {
         <div className="flex bg-white/50 backdrop-blur-md p-1.5 rounded-[2rem] border border-gray-100 shadow-sm self-start">
           <button
             onClick={() => setActiveTab("USERS")}
-            className={`px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === "USERS" ? "bg-white text-gray-900 shadow-lg shadow-gray-200/50" : "text-gray-400 hover:text-gray-600"}`}
+            className={`px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "USERS" ? "bg-white text-gray-900 shadow-lg shadow-gray-200/50" : "text-gray-400 hover:text-gray-600"}`}
           >
-            Staff Directory
+            Staff
           </button>
           <button
             onClick={() => setActiveTab("ROLES")}
-            className={`px-8 py-3 rounded-full text-[11px] font-black uppercase tracking-widest transition-all ${activeTab === "ROLES" ? "bg-white text-gray-900 shadow-lg shadow-gray-200/50" : "text-gray-400 hover:text-gray-600"}`}
+            className={`px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "ROLES" ? "bg-white text-gray-900 shadow-lg shadow-gray-200/50" : "text-gray-400 hover:text-gray-600"}`}
           >
-            Security Roles
+            Roles
+          </button>
+          <button
+            onClick={() => setActiveTab("PERMISSIONS")}
+            className={`px-6 py-3 rounded-full text-[10px] font-black uppercase tracking-widest transition-all ${activeTab === "PERMISSIONS" ? "bg-white text-gray-900 shadow-lg shadow-gray-200/50" : "text-gray-400 hover:text-gray-600"}`}
+          >
+            Capabilities
           </button>
         </div>
       </div>
@@ -187,7 +225,7 @@ export default function UsersPage() {
                 type="text"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder={`Search ${activeTab === "USERS" ? "staff..." : "roles..."}`}
+                placeholder={`Search ${activeTab === "USERS" ? "staff..." : activeTab === "ROLES" ? "roles..." : "capabilities..."}`}
                 className="w-full pl-12 pr-6 py-4 bg-gray-50/50 border-2 border-transparent rounded-[1.5rem] font-bold text-sm focus:bg-white focus:ring-8 focus:ring-purple-500/5 focus:border-purple-500/10 transition-all outline-none"
               />
             </div>
@@ -196,22 +234,29 @@ export default function UsersPage() {
               <div className="px-6 text-[10px] font-black text-gray-400 uppercase tracking-widest bg-gray-50/80 py-4 rounded-2xl border border-gray-100">
                 {activeTab === "USERS"
                   ? `Headcount: ${totalUsers}`
-                  : `Permission sets: ${roles.length}`}
+                  : activeTab === "ROLES" 
+                  ? `Roles: ${roles.length}`
+                  : `Skills: ${permissions.length}`}
               </div>
               <button
                 onClick={() => {
                   if (activeTab === "USERS") {
                     setEditingUser(null);
                     setIsUserModalOpen(true);
-                  } else {
+                  } else if (activeTab === "ROLES") {
                     setEditingRole(null);
                     setIsRoleModalOpen(true);
+                  } else {
+                    setEditingPermission(null);
+                    setIsPermissionModalOpen(true);
                   }
                 }}
                 className="flex items-center gap-2.5 px-6 py-4 bg-gray-900 text-white rounded-2xl font-black text-[10px] uppercase tracking-widest hover:bg-purple-600 transition-all active:scale-95 shadow-xl shadow-gray-200"
               >
                 <Plus size={14} strokeWidth={3} />
-                <span>Create {activeTab === "USERS" ? "Staff" : "Role"}</span>
+                <span>
+                    {activeTab === "USERS" ? "Add User" : activeTab === "ROLES" ? "Add Role" : "Add Capability"}
+                </span>
               </button>
             </div>
           </div>
@@ -227,7 +272,7 @@ export default function UsersPage() {
                           Profile
                         </th>
                         <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
-                          Security Level
+                          Role
                         </th>
                         <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
                           Activity
@@ -236,16 +281,31 @@ export default function UsersPage() {
                           Ops
                         </th>
                       </>
-                    ) : (
+                    ) : activeTab === "ROLES" ? (
                       <>
                         <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
-                          Role Definition
+                          Role Name
                         </th>
                         <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
                           Permissions
                         </th>
                         <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
                           Scope
+                        </th>
+                        <th className="px-10 py-7 text-right text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                          Ops
+                        </th>
+                      </>
+                    ) : (
+                        <>
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                          Capability
+                        </th>
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                          Resource Code
+                        </th>
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                          Domain
                         </th>
                         <th className="px-10 py-7 text-right text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
                           Ops
@@ -260,84 +320,105 @@ export default function UsersPage() {
                       <tr>
                         <td colSpan={4} className="py-24 text-center">
                           <Loader2
-                            className="animate-spin mx-auto text-purple-600 mb-4"
+                            className="animate-spin mx-auto text-blue-600 mb-4"
                             size={32}
                           />
                           <p className="font-black text-gray-400 uppercase text-[10px] tracking-widest">
-                            Mounting Directory
+                            Syncing Registry
                           </p>
                         </td>
                       </tr>
                     ) : (
-                      users.map((user) => (
-                        <tr
-                          key={user.id}
-                          className="group hover:bg-white transition-all cursor-default relative"
-                        >
-                          <td className="px-10 py-7">
-                            <div className="flex items-center gap-5">
-                              <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-gray-50 to-white flex items-center justify-center border-2 border-white shadow-xl group-hover:rotate-3 transition-transform overflow-hidden">
-                                {user.image ? (
-                                  <img
-                                    src={user.image}
-                                    alt=""
-                                    className="w-full h-full object-cover"
-                                  />
-                                ) : (
-                                  <UsersIcon
-                                    className="text-gray-200"
-                                    size={24}
-                                  />
-                                )}
+                      Object.entries(
+                        users.reduce((acc: any, user: any) => {
+                          const roleName = user.roleData?.name || user.role || "UNASSIGNED";
+                          if (!acc[roleName]) acc[roleName] = [];
+                          acc[roleName].push(user);
+                          return acc;
+                        }, {})
+                      ).map(([role, roleUsers]: [string, any]) => (
+                        <React.Fragment key={role}>
+                          <tr className="bg-gray-50/50">
+                            <td colSpan={4} className="px-10 py-4">
+                              <div className="flex items-center gap-3">
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-600 bg-blue-50 px-3 py-1.5 rounded-lg border border-blue-100">
+                                  {role} LEVEL
+                                </span>
+                                <div className="h-[1px] flex-grow bg-blue-100/50" />
                               </div>
-                              <div>
-                                <h5 className="font-black text-gray-900 text-[15px]">
-                                  {user.name}
-                                </h5>
-                                <p className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5 mt-0.5">
-                                  <Mail size={12} /> {user.email}
-                                </p>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-10 py-7">
-                            {getRoleBadge(user.roleData || user.role)}
-                          </td>
-                          <td className="px-10 py-7">
-                            <div className="flex flex-col">
-                              <span className="text-xs font-black text-gray-700">
-                                {user.lastLogin
-                                  ? new Date(
-                                      user.lastLogin,
-                                    ).toLocaleDateString()
-                                  : "Inactive"}
-                              </span>
-                              <span
-                                className={`text-[9px] font-black uppercase tracking-wider mt-1 ${user.isActive ? "text-green-500" : "text-red-400"}`}
-                              >
-                                {user.isActive
-                                  ? "Verified / Online"
-                                  : "Account Disabled"}
-                              </span>
-                            </div>
-                          </td>
-                          <td className="px-10 py-7 text-right">
-                            <div className="flex items-center justify-end gap-2.5 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
-                              <button
-                                onClick={() => handleEditUser(user)}
-                                className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-purple-600 shadow-sm hover:shadow-md transition-all active:scale-90"
-                              >
-                                <Edit size={16} />
-                              </button>
-                              <button
-                                onClick={() => handleDeleteUser(user)}
-                                className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-red-500 shadow-sm hover:shadow-md transition-all active:scale-90"
-                              >
-                                <Trash2 size={16} />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
+                            </td>
+                          </tr>
+                          {roleUsers.map((user: any) => (
+                            <tr
+                              key={user.id}
+                              className="group hover:bg-white transition-all cursor-default relative"
+                            >
+                              <td className="px-10 py-7">
+                                <div className="flex items-center gap-5">
+                                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-white flex items-center justify-center border-2 border-white shadow-xl group-hover:rotate-3 transition-transform overflow-hidden">
+                                    {user.image ? (
+                                      <img
+                                        src={user.image}
+                                        alt=""
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <UsersIcon
+                                        className="text-blue-200"
+                                        size={24}
+                                      />
+                                    )}
+                                  </div>
+                                  <div>
+                                    <h5 className="font-black text-gray-900 text-[15px]">
+                                      {user.name}
+                                    </h5>
+                                    <p className="text-[11px] font-bold text-gray-400 flex items-center gap-1.5 mt-0.5">
+                                      <Mail size={12} /> {user.email}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-10 py-7">
+                                {getRoleBadge(user.roleData || user.role)}
+                              </td>
+                              <td className="px-10 py-7">
+                                <div className="flex flex-col">
+                                  <span className="text-xs font-black text-gray-700">
+                                    {user.lastLogin
+                                      ? new Date(
+                                          user.lastLogin,
+                                        ).toLocaleDateString()
+                                      : "Inactive"}
+                                  </span>
+                                  <span
+                                    className={`text-[9px] font-black uppercase tracking-wider mt-1 ${user.isActive ? "text-green-500" : "text-red-400"}`}
+                                  >
+                                    {user.isActive
+                                      ? "Verified / Online"
+                                      : "Account Disabled"}
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-10 py-7 text-right">
+                                <div className="flex items-center justify-end gap-2.5 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                                  <button
+                                    onClick={() => handleEditUser(user)}
+                                    className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-blue-600 shadow-sm hover:shadow-md transition-all active:scale-90"
+                                  >
+                                    <Edit size={16} />
+                                  </button>
+                                  <button
+                                    onClick={() => handleDeleteUser(user)}
+                                    className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-red-500 shadow-sm hover:shadow-md transition-all active:scale-90"
+                                  >
+                                    <Trash2 size={16} />
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
                       ))
                     )
                   ) : rolesLoading ? (
@@ -349,71 +430,200 @@ export default function UsersPage() {
                         />
                       </td>
                     </tr>
-                  ) : (
-                    roles.map((role) => (
-                      <tr
-                        key={role.id}
-                        className="group hover:bg-white transition-all cursor-default"
-                      >
-                        <td className="px-10 py-7">
-                          <div className="flex items-center gap-5">
-                            <div className="w-12 h-12 rounded-xl bg-purple-50 flex items-center justify-center border-2 border-white shadow-sm text-purple-400">
-                              <Key size={20} />
-                            </div>
-                            <div>
-                              <h5 className="font-black text-gray-900 text-[15px]">
-                                {role.name}
-                              </h5>
-                              <p className="text-[11px] font-bold text-gray-400 truncate max-w-[200px] mt-0.5">
-                                {role.description || "Custom operational role"}
-                              </p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-10 py-7">
-                          <div className="flex items-center gap-1.5 flex-wrap">
-                            <span className="text-[10px] font-black uppercase tracking-wider text-purple-600 bg-purple-50 px-2 py-0.5 rounded border border-purple-100">
-                              {role.permissions?.length || 0} Permissions
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-10 py-7">
-                          {role.isSystem ? (
-                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100">
-                              <ShieldCheck size={14} strokeWidth={3} />
-                              Protected System
-                            </div>
-                          ) : (
-                            <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
-                              <Settings size={14} strokeWidth={3} />
-                              Organizational
-                            </div>
-                          )}
-                        </td>
-                        <td className="px-10 py-7 text-right">
-                          <div className="flex items-center justify-end gap-2.5">
-                            {!role.isSystem && (
-                              <>
-                                <button
-                                  onClick={() => handleEditRole(role)}
-                                  className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-purple-600 shadow-sm hover:shadow-md transition-all active:scale-90"
+                    ) : activeTab === "ROLES" ? (
+                      Object.entries(
+                        roles.reduce((acc: any, role: any) => {
+                          const type = role.isSystem ? "SYSTEM" : "OPERATIONAL";
+                          if (!acc[type]) acc[type] = [];
+                          acc[type].push(role);
+                          return acc;
+                        }, {})
+                      ).map(([type, typeRoles]: [string, any]) => (
+                        <React.Fragment key={type}>
+                          <tr className="bg-gray-50/50">
+                            <td colSpan={4} className="px-10 py-4">
+                              <div className="flex items-center gap-3">
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border ${type === "SYSTEM" ? "text-amber-600 bg-amber-50 border-amber-100" : "text-orange-600 bg-orange-50 border-orange-100"}`}>
+                                  {type === "SYSTEM" ? "Architecture Foundation" : "Business Operations"}
+                                </span>
+                                <div className={`h-[1px] flex-grow ${type === "SYSTEM" ? "bg-amber-100/50" : "bg-orange-100/50"}`} />
+                              </div>
+                            </td>
+                          </tr>
+                          {typeRoles.map((role: any) => (
+                            <tr
+                              key={role.id}
+                              className="group hover:bg-white transition-all cursor-default"
+                            >
+                              <td className="px-10 py-7">
+                                <div className="flex items-center gap-5">
+                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow-sm ${role.isSystem ? "bg-amber-50 text-amber-400" : "bg-orange-50 text-orange-400"}`}>
+                                    <Key size={20} />
+                                  </div>
+                                  <div>
+                                    <h5 className="font-black text-gray-900 text-[15px]">
+                                      {role.name}
+                                    </h5>
+                                    <p className="text-[11px] font-bold text-gray-400 truncate max-w-[200px] mt-0.5">
+                                      {role.description || "Custom operational role"}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="px-10 py-7">
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                  <span className={`text-[10px] font-black uppercase tracking-wider px-2 py-0.5 rounded border ${role.isSystem ? "text-amber-600 bg-amber-50 border-amber-100" : "text-orange-600 bg-orange-50 border-orange-100"}`}>
+                                    {role.permissions?.length || 0} Permissions
+                                  </span>
+                                </div>
+                              </td>
+                              <td className="px-10 py-7">
+                                {role.isSystem ? (
+                                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-blue-500 bg-blue-50 px-3 py-1.5 rounded-full border border-blue-100">
+                                    <ShieldCheck size={14} strokeWidth={3} />
+                                    Protected System
+                                  </div>
+                                ) : (
+                                  <div className="flex items-center gap-2 text-[10px] font-black uppercase tracking-widest text-gray-400 bg-gray-50 px-3 py-1.5 rounded-full border border-gray-100">
+                                    <Settings size={14} strokeWidth={3} />
+                                    Organizational
+                                  </div>
+                                )}
+                              </td>
+                              <td className="px-10 py-7 text-right">
+                                <div className="flex items-center justify-end gap-2.5 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                                  {!role.isSystem && (
+                                    <>
+                                      <button
+                                        onClick={() => handleEditRole(role)}
+                                        className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-amber-600 shadow-sm hover:shadow-md transition-all active:scale-90"
+                                      >
+                                        <Edit size={16} />
+                                      </button>
+                                      <button
+                                        onClick={() => handleDeleteRole(role)}
+                                        className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-red-500 shadow-sm hover:shadow-md transition-all active:scale-90"
+                                      >
+                                        <Trash2 size={16} />
+                                      </button>
+                                    </>
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))
+                    ) : (
+                      Object.entries(
+                        permissions.reduce((acc: any, perm: any) => {
+                          const cat = perm.category || "OTHER";
+                          if (!acc[cat]) acc[cat] = [];
+                          acc[cat].push(perm);
+                          return acc;
+                        }, {})
+                      ).map(([category, perms]: [string, any]) => {
+                        const categoryColors: any = {
+                          POS: "text-blue-600 bg-blue-50 border-blue-100",
+                          KITCHEN: "text-orange-600 bg-orange-50 border-orange-100",
+                          MANAGEMENT: "text-purple-600 bg-purple-50 border-purple-100",
+                          OPERATIONS: "text-emerald-600 bg-emerald-50 border-emerald-100",
+                          ANALYTICS: "text-indigo-600 bg-indigo-50 border-indigo-100",
+                          OTHER: "text-gray-600 bg-gray-50 border-gray-100"
+                        };
+                        const catStyle = categoryColors[category] || categoryColors.OTHER;
+
+                        return (
+                          <React.Fragment key={category}>
+                            <tr className="bg-gray-50/30">
+                              <td colSpan={4} className="px-10 py-4">
+                                <span className={`text-[10px] font-black uppercase tracking-[0.2em] px-3 py-1.5 rounded-lg border ${catStyle}`}>
+                                  {category} Domain
+                                </span>
+                              </td>
+                            </tr>
+                            {perms.map((perm: any) => {
+                              const actionStyles: any = {
+                                CREATE: "bg-emerald-500 text-white",
+                                UPDATE: "bg-blue-500 text-white",
+                                DELETE: "bg-red-500 text-white",
+                                MANAGE: "bg-gray-900 text-white",
+                                READ: "bg-gray-100 text-gray-600",
+                                FINANCIAL: "bg-amber-500 text-white",
+                              };
+                              const actionStyle = actionStyles[perm.action] || "bg-gray-400 text-white";
+
+                              // Dynamic Icon Selection
+                              const getIcon = () => {
+                                if (perm.category === 'POS') return <Zap size={18} strokeWidth={3} />;
+                                if (perm.category === 'KITCHEN') return <Utensils size={18} strokeWidth={3} />;
+                                if (perm.category === 'ANALYTICS') return <LineChart size={18} strokeWidth={3} />;
+                                if (perm.category === 'MANAGEMENT') return <ShieldCheck size={18} strokeWidth={3} />;
+                                if (perm.category === 'OPERATIONS') return <Globe size={18} strokeWidth={3} />;
+                                if (perm.resource === 'reports') return <BarChart3 size={18} strokeWidth={3} />;
+                                if (perm.action === 'FINANCIAL') return <Receipt size={18} strokeWidth={3} />;
+                                return <Zap size={18} strokeWidth={3} />;
+                              };
+
+                              return (
+                                <tr
+                                  key={perm.id}
+                                  className="group hover:bg-white transition-all cursor-default"
                                 >
-                                  <Edit size={16} />
-                                </button>
-                                <button
-                                  onClick={() => handleDeleteRole(role)}
-                                  className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-red-500 shadow-sm hover:shadow-md transition-all active:scale-90"
-                                >
-                                  <Trash2 size={16} />
-                                </button>
-                              </>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
+                                  <td className="px-10 py-7">
+                                    <div className="flex items-center gap-5">
+                                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow-lg rotate-3 group-hover:rotate-0 transition-transform ${catStyle.split(' ')[0].replace('text', 'bg').replace('600', '500')} text-white`}>
+                                        {getIcon()}
+                                      </div>
+                                      <div>
+                                        <h5 className="font-black text-gray-900 text-[14px]">
+                                          {perm.name}
+                                        </h5>
+                                        <p className="text-[10px] font-bold text-gray-400 uppercase tracking-tighter mt-0.5">
+                                          {perm.description || "System Authorization Layer"}
+                                        </p>
+                                      </div>
+                                    </div>
+                                  </td>
+                                  <td className="px-10 py-7">
+                                    <div className="flex items-center gap-2">
+                                      <code className="bg-gray-100 px-3 py-1 rounded-lg text-[11px] font-black text-gray-600 tracking-wider">
+                                        {perm.resource}
+                                      </code>
+                                      <span className={`px-2 py-1 rounded-md text-[9px] font-black uppercase tracking-widest ${actionStyle}`}>
+                                        {perm.action}
+                                      </span>
+                                    </div>
+                                  </td>
+                                  <td className="px-10 py-7">
+                                    <div className={`flex items-center gap-2 text-[10px] font-black uppercase tracking-widest ${catStyle.split(' ')[0]}`}>
+                                      {perm.category}
+                                    </div>
+                                  </td>
+                                  <td className="px-10 py-7 text-right">
+                                    <div className="flex items-center justify-end gap-2.5 opacity-0 group-hover:opacity-100 transition-all translate-x-2 group-hover:translate-x-0">
+                                        <button
+                                          onClick={() => handleEditPermission(perm)}
+                                          className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-purple-600 shadow-sm hover:shadow-md transition-all active:scale-90"
+                                        >
+                                          <Edit size={16} />
+                                        </button>
+                                        <button
+                                          onClick={() => handleDeletePermission(perm)}
+                                          className="p-3 bg-white border border-gray-100 rounded-xl text-gray-400 hover:text-red-500 shadow-sm hover:shadow-md transition-all active:scale-90"
+                                        >
+                                          <Trash2 size={16} />
+                                        </button>
+                                    </div>
+                                  </td>
+                                </tr>
+                              );
+                            })}
+                          </React.Fragment>
+                        );
+                      })
+                    )}
+                  </tbody>
               </table>
             </div>
           </div>
@@ -475,9 +685,7 @@ export default function UsersPage() {
               <ShieldAlert size={20} />
             </div>
             <h4 className="text-2xl font-black mb-4 leading-tight">
-              Secure Access
-              <br />
-              Protocol
+              Staff Security
             </h4>
             <p className="text-gray-400 text-xs font-bold leading-relaxed mb-8">
               Every user action is logged by their terminal PIN. Ensure staff
@@ -507,7 +715,7 @@ export default function UsersPage() {
         show={isUserModalOpen}
         onClose={() => setIsUserModalOpen(false)}
         index={100}
-        title={editingUser ? "Resonance Adjustment" : "Entity Manifestation"}
+        title={editingUser ? "Edit User" : "New User"}
         showCloseButton={false}
         className="w-full md:w-[90vw] lg:w-[85vw] xl:max-w-6xl"
       >
@@ -521,13 +729,27 @@ export default function UsersPage() {
         show={isRoleModalOpen}
         onClose={() => setIsRoleModalOpen(false)}
         index={100}
-        title={editingRole ? "Upgrade Role" : "Define Security Set"}
+        title={editingRole ? "Edit Role" : "New Role"}
         showCloseButton={false}
         className="w-full md:w-[90vw] lg:w-[85vw] xl:max-w-6xl"
       >
         <AddRoleModal
           role={editingRole}
           onClose={() => setIsRoleModalOpen(false)}
+        />
+      </Modal>
+
+      <Modal
+        show={isPermissionModalOpen}
+        onClose={() => setIsPermissionModalOpen(false)}
+        index={110}
+        title={editingPermission ? "Edit Capability" : "New Capability"}
+        showCloseButton={false}
+        className="w-full md:w-[90vw] lg:w-[85vw] xl:max-w-4xl"
+      >
+        <AddPermissionModal
+          permission={editingPermission}
+          onClose={() => setIsPermissionModalOpen(false)}
         />
       </Modal>
     </div>

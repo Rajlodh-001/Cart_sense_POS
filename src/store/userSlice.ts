@@ -30,16 +30,16 @@ const userSlice = createSlice({
   reducers: {
     setUser: (
       state,
-      action: PayloadAction<Omit<UserState, "isAuthenticated">>,
+      action: PayloadAction<Partial<UserState>>,
     ) => {
-      state.id = action.payload.id;
-      state.name = action.payload.name;
-      state.email = action.payload.email;
-      state.avatar = action.payload.avatar;
-      state.role = action.payload.role;
-      state.roleId = action.payload.roleId;
-      state.permissions = action.payload.permissions;
-      state.preferences = action.payload.preferences;
+      if (action.payload.id) state.id = action.payload.id;
+      if (action.payload.name) state.name = action.payload.name;
+      if (action.payload.email) state.email = action.payload.email;
+      if (action.payload.avatar !== undefined) state.avatar = action.payload.avatar;
+      if (action.payload.role) state.role = action.payload.role;
+      if (action.payload.roleId) state.roleId = action.payload.roleId;
+      if (action.payload.permissions) state.permissions = action.payload.permissions;
+      if (action.payload.preferences) state.preferences = action.payload.preferences;
       state.isAuthenticated = true;
     },
     clearUser: (state) => {

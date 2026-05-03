@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { Category, useCreateCategory, useUpdateCategory } from "@/hooks/useCategories";
 import { useQueryClient } from "@tanstack/react-query";
+import LucideIcon from "@/components/shared/LucideIcon";
 import { FormInput, FormImage, FormSection } from "@/components/shared/forms";
 
 interface AddCategoryModalProps {
@@ -24,18 +25,22 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ category, onClose }
 
   const [formData, setFormData] = useState({
     name: "",
-    color: "#3B82F6",
-    icon: "Layers",
     imageUrl: "",
+    primaryColor: "",
+    secondaryColor: "",
+    iconName: "",
+    groupBy: "",
   });
 
   useEffect(() => {
     if (category) {
       setFormData({
-        name: category.name,
-        color: category.color || "#3B82F6",
-        icon: category.icon || "Layers",
+        name: category.name || "",
         imageUrl: category.imageUrl || "",
+        primaryColor: category.primaryColor || "",
+        secondaryColor: category.secondaryColor || "",
+        iconName: category.iconName || "",
+        groupBy: category.groupBy || "",
       });
     }
   }, [category]);
@@ -63,9 +68,15 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ category, onClose }
       {/* Header - Fixed */}
       <div className="flex items-center justify-between p-10 pb-8 border-b border-gray-50 flex-shrink-0">
         <div className="flex items-center gap-6">
-          <div className="w-20 h-20 bg-gray-900 rounded-[2rem] flex items-center justify-center text-white shadow-premium relative overflow-hidden group">
-            <Layers size={32} className="relative z-10 transition-transform group-hover:scale-110 duration-500" />
-            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div 
+            className="w-20 h-20 rounded-[2rem] flex items-center justify-center text-white shadow-premium relative overflow-hidden group transition-colors duration-500"
+            style={{ 
+              backgroundColor: formData.primaryColor || '#111827',
+              boxShadow: formData.primaryColor ? `0 20px 40px ${formData.primaryColor}30` : '0 20px 40px rgba(0,0,0,0.1)'
+            }}
+          >
+            <LucideIcon name={formData.iconName || 'Layers'} size={32} className="relative z-10 transition-transform group-hover:scale-110 duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div>
             <h3 className="text-3xl font-black text-gray-900 tracking-tight">
@@ -150,6 +161,37 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ category, onClose }
                  onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                  placeholder="e.g. Layers, Coffee, Pizza"
                />
+
+               <div className="pt-8 border-t border-gray-100 space-y-8">
+                  <div className="grid grid-cols-2 gap-6">
+                    <FormInput 
+                      label="Primary Color"
+                      value={formData.primaryColor}
+                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                      placeholder="#HEX"
+                    />
+                    <FormInput 
+                      label="Secondary Color"
+                      value={formData.secondaryColor}
+                      onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                      placeholder="#HEX"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-6">
+                    <FormInput 
+                      label="Icon Name"
+                      value={formData.iconName}
+                      onChange={(e) => setFormData({ ...formData, iconName: e.target.value })}
+                      placeholder="e.g. Flame, Pizza"
+                    />
+                    <FormInput 
+                      label="Group By Label"
+                      value={formData.groupBy}
+                      onChange={(e) => setFormData({ ...formData, groupBy: e.target.value })}
+                      placeholder="e.g. Main Menu"
+                    />
+                  </div>
+               </div>
             </div>
           </div>
         </FormSection>

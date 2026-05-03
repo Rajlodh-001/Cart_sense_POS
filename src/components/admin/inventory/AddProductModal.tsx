@@ -21,6 +21,7 @@ import {
   Sliders,
   Weight as WeightIcon 
 } from "lucide-react";
+import LucideIcon from "@/components/shared/LucideIcon";
 import { Product, useCreateProduct, useUpdateProduct } from "@/hooks/useProducts";
 import { useCategories, useCreateCategory } from "@/hooks/useCategories";
 import { useModifiers } from "@/hooks/useModifiers";
@@ -47,24 +48,12 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
   const [recipeRaw, setRecipeRaw] = useState("");
   const [cookingRaw, setCookingRaw] = useState("");
   const [selectedModifierIds, setSelectedModifierIds] = useState<string[]>([]);
-
   const [formData, setFormData] = useState({
-    name: "",
-    price: "",
-    skuId: "",
-    categoryId: "",
-    imageUrl: "",
-    isActive: true,
-    description: "",
-    additionalNotes: "",
-    discount: "0",
-    color: "",
-    size: "",
-    calories: "0",
-    protein: "0",
-    carbs: "0",
-    fat: "0",
     weight: "0",
+    primaryColor: "",
+    secondaryColor: "",
+    iconName: "",
+    groupBy: "",
   });
 
   useEffect(() => {
@@ -86,6 +75,10 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
         carbs: (product.carbs || 0).toString(),
         fat: (product.fat || 0).toString(),
         weight: (product.weight || 0).toString(),
+        primaryColor: product.primaryColor || "",
+        secondaryColor: product.secondaryColor || "",
+        iconName: product.iconName || "",
+        groupBy: product.groupBy || "",
       });
       setRecipeRaw(product.recipe ? JSON.stringify(product.recipe, null, 2) : "{}");
       setCookingRaw(product.cookingDescription ? JSON.stringify(product.cookingDescription, null, 2) : "{}");
@@ -228,8 +221,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
       {/* Header - Fixed */}
       <div className="flex items-center justify-between p-10 pb-6 border-b border-gray-50 flex-shrink-0">
         <div className="flex items-center gap-5">
-          <div className="w-16 h-16 bg-gray-900 rounded-[1.5rem] flex items-center justify-center text-white shadow-premium">
-            <Package size={24} />
+          <div 
+            className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-white shadow-premium transition-colors duration-500"
+            style={{ 
+                backgroundColor: formData.primaryColor || '#111827',
+                boxShadow: formData.primaryColor ? `0 15px 30px ${formData.primaryColor}30` : '0 15px 40px rgba(0,0,0,0.1)'
+            }}
+          >
+            <LucideIcon name={formData.iconName || 'Package'} size={24} />
           </div>
           <div>
             <h3 className="text-2xl font-black text-gray-900 tracking-tight">
@@ -489,6 +488,38 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
                   className="w-full px-8 py-4 bg-white border border-gray-100 rounded-full font-bold focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all text-gray-900 outline-none shadow-sm"
                   placeholder="0.00"
                 />
+              </div>
+
+              <div className="pt-8 border-t border-gray-100 space-y-8">
+                <h4 className="text-[10px] font-black uppercase tracking-[0.3em] text-gray-400">Visual Branding</h4>
+                <div className="grid grid-cols-2 gap-6">
+                  <FormInput 
+                    label="Primary Color"
+                    value={formData.primaryColor}
+                    onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                    placeholder="#HEX"
+                  />
+                  <FormInput 
+                    label="Secondary Color"
+                    value={formData.secondaryColor}
+                    onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                    placeholder="#HEX"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-6">
+                  <FormInput 
+                    label="Icon Name"
+                    value={formData.iconName}
+                    onChange={(e) => setFormData({ ...formData, iconName: e.target.value })}
+                    placeholder="e.g. Flame"
+                  />
+                  <FormInput 
+                    label="Group By Label"
+                    value={formData.groupBy}
+                    onChange={(e) => setFormData({ ...formData, groupBy: e.target.value })}
+                    placeholder="e.g. Featured Items"
+                  />
+                </div>
               </div>
 
               <div className="space-y-2">

@@ -8,18 +8,20 @@ import {
   Shield, 
   Lock, 
   Fingerprint,
-  Users,
-  CheckCircle2,
   XCircle,
-  Layout
+  Layout,
+  Palette,
+  Zap
 } from "lucide-react";
+import LucideIcon from "@/components/shared/LucideIcon";
 import { FormInput } from "@/components/shared/forms/FormInput";
 import { FormSelect } from "@/components/shared/forms/FormSelect";
 import { FormMultiSelect } from "@/components/shared/forms/FormMultiSelect";
 import { FormToggle } from "@/components/shared/forms/FormToggle";
 import { FormImage } from "@/components/shared/forms/FormImage";
 import { FormSection } from "@/components/shared/forms/FormSection";
-import { useCreateUser, useUpdateUser, User, useAllLocations, useRoles } from "@/hooks/useUsers";
+import { FormCreatableSelect } from "@/components/shared/forms/FormCreatableSelect";
+import { useCreateUser, useUpdateUser, User, useAllLocations, useRoles, useUserGroups } from "@/hooks/useUsers";
 import toast from "react-hot-toast";
 
 interface AddUserModalProps {
@@ -33,6 +35,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
   const updateUser = useUpdateUser();
   const { data: locations } = useAllLocations();
   const { data: roles } = useRoles();
+  const { data: userGroups } = useUserGroups();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -45,6 +48,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
     image: "",
     isActive: true,
     accessibleLocationIds: [] as string[],
+    primaryColor: "",
+    secondaryColor: "",
+    iconName: "",
+    groupBy: "",
+    imageUrl: "",
   });
 
   useEffect(() => {
@@ -60,6 +68,11 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
         image: user.image || "",
         isActive: user.isActive,
         accessibleLocationIds: user.accessibleLocations?.map((l: any) => l.id) || [],
+        primaryColor: user.primaryColor || "",
+        secondaryColor: user.secondaryColor || "",
+        iconName: user.iconName || "",
+        groupBy: user.groupBy || "",
+        imageUrl: user.imageUrl || "",
       });
     }
   }, [user]);
@@ -69,14 +82,14 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
     try {
       if (isEditing) {
         await toast.promise(updateUser.mutateAsync({ id: user!.id, data: formData }), {
-          loading: "Updating profile...",
-          success: "Staff updated",
+          loading: "Saving changes...",
+          success: "User updated",
           error: (err) => err.message || "Failed to update",
         });
       } else {
         await toast.promise(createUser.mutateAsync(formData), {
-          loading: "Creating account...",
-          success: "Staff onboarded",
+          loading: "Creating user...",
+          success: "User created",
           error: (err) => err.message || "Failed to create",
         });
       }
@@ -89,12 +102,18 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
       {/* Product Style Header Layer */}
       <div className="px-10 py-10 border-b border-gray-50 flex items-center justify-between bg-white relative z-20">
          <div className="flex items-center gap-6">
-            <div className="w-16 h-16 bg-gray-900 text-white rounded-[1.5rem] flex items-center justify-center shadow-2xl">
-                <Users size={28} strokeWidth={2.5} />
+            <div 
+              className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-white shadow-2xl transition-all duration-500"
+              style={{ 
+                backgroundColor: formData.primaryColor || '#111827',
+                boxShadow: formData.primaryColor ? `0 10px 20px ${formData.primaryColor}30` : 'none'
+              }}
+            >
+                <LucideIcon name={formData.iconName || 'Users'} size={28} strokeWidth={2.5} />
             </div>
             <div>
-                <h2 className="text-3xl font-black text-gray-900 tracking-tight">{isEditing ? "Edit Account" : "New Staff"}</h2>
-                <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">Identity Control System</h4>
+                <h2 className="text-3xl font-black text-gray-900 tracking-tight">{isEditing ? "Edit User" : "New User"}</h2>
+                <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">Account Details</h4>
             </div>
          </div>
          
@@ -115,10 +134,10 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
           <div className="lg:col-span-4 space-y-10">
              <div className="sticky top-0">
                 <FormImage 
-                    label="Staff Profile Photo"
+                    label="Profile Photo"
                     value={formData.image}
                     onChange={(val) => setFormData({ ...formData, image: val })}
-                    description="High-fidelity visual ID for receipts & dashboard."
+                    description="Profile photo for staff directory and receipts."
                 />
              </div>
           </div>
@@ -138,8 +157,8 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
                         placeholder="e.g. Michael Scott"
                     />
                     <FormToggle 
-                        label="Account Status"
-                        icon={CheckCircle2}
+                        label="Account Authorization"
+                        icon={ShieldCheck}
                         checked={formData.isActive}
                         onChange={(val) => setFormData({ ...formData, isActive: val })}
                     />
@@ -156,13 +175,13 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
                         placeholder="e.g. michael@dundermifflin.com"
                     />
                     <FormSelect 
-                        label="Primary Security Role"
+                        label="User Role"
                         icon={Shield}
                         required
                         value={formData.roleId}
                         onChange={(e) => setFormData({ ...formData, roleId: e.target.value })}
                         options={roles?.map(r => ({ value: r.id, label: r.name })) || []}
-                        placeholder="Select clearance level..."
+                        placeholder="Select role..."
                     />
                 </div>
              </div>
@@ -196,7 +215,7 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
              </FormSection>
 
              {/* SECTION: AUTHENTICATION */}
-             <FormSection icon={Lock} title="Terminal Security" subtitle="Credentials for POS and Backoffice">
+             <FormSection icon={Lock} title="Credentials" subtitle="Access details for POS and Admin">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormInput 
                         label={isEditing ? "Reset Password" : "Dashboard Password"}
@@ -219,6 +238,43 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
                     />
                 </div>
              </FormSection>
+
+             {/* SECTION: VISUAL IDENTITY */}
+             <FormSection icon={Palette} title="Visual Identity" subtitle="Configure user branding">
+                <div className="grid grid-cols-2 gap-6">
+                    <FormInput 
+                        label="Primary Color" 
+                        icon={Palette}
+                        value={formData.primaryColor}
+                        onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
+                        placeholder="#HEX"
+                    />
+                    <FormInput 
+                        label="Secondary Color" 
+                        icon={Palette}
+                        value={formData.secondaryColor}
+                        onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
+                        placeholder="#HEX"
+                    />
+                </div>
+                <div className="grid grid-cols-2 gap-6 mt-6">
+                    <FormInput 
+                        label="Icon Name" 
+                        icon={Zap}
+                        value={formData.iconName}
+                        onChange={(e) => setFormData({ ...formData, iconName: e.target.value })}
+                        placeholder="Users, Shield, etc."
+                    />
+                    <FormCreatableSelect 
+                        label="Group Label" 
+                        icon={Layout}
+                        value={formData.groupBy}
+                        onChange={(val) => setFormData({ ...formData, groupBy: val })}
+                        options={userGroups?.map(g => ({ value: g, label: g })) || []}
+                        placeholder="Management, Kitchen, etc."
+                    />
+                </div>
+             </FormSection>
           </div>
         </div>
       </form>
@@ -236,9 +292,9 @@ const AddUserModal: React.FC<AddUserModalProps> = ({ user, onClose }) => {
            onClick={handleSubmit}
            className="px-12 py-5 bg-gray-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-gray-900/20 hover:bg-purple-600 transition-all active:scale-95 flex items-center gap-3"
          >
-           <CheckCircle2 size={16} strokeWidth={3} />
-           {isEditing ? "Update Staff Profile" : "Authorize New Staff"}
-         </button>
+            <CheckCircle2 size={16} strokeWidth={3} />
+            {isEditing ? "Update User" : "Add User"}
+          </button>
       </div>
     </div>
   );

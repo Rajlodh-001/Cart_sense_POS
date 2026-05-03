@@ -107,3 +107,17 @@ export function useOrderHistory(filters?: {
     staleTime: 30000,
   });
 }
+export function useUpdateOrderItemStatus() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ id, status }: { id: string; status: string }) => {
+      const response = await axiosInstance.patch(`/order-item/${id}/status`, { status });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      queryClient.invalidateQueries({ queryKey: ["orderHistory"] });
+    },
+  });
+}

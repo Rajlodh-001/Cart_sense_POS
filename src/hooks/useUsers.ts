@@ -5,8 +5,14 @@ export interface Permission {
   id: string;
   name: string;
   resource: string;
-  action: 'CREATE' | 'READ' | 'UPDATE' | 'DELETE' | 'MANAGE';
+  action: string;
+  category: string;
   description?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  iconName?: string;
+  imageUrl?: string;
+  groupBy?: string;
 }
 
 export interface User {
@@ -27,6 +33,11 @@ export interface User {
   pin?: string;
   preferences?: any;
   accessibleLocationIds?: string[];
+  primaryColor?: string;
+  secondaryColor?: string;
+  iconName?: string;
+  imageUrl?: string;
+  groupBy?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -37,6 +48,11 @@ export interface RoleData {
   description?: string;
   isSystem: boolean;
   permissions?: Permission[];
+  primaryColor?: string;
+  secondaryColor?: string;
+  iconName?: string;
+  imageUrl?: string;
+  groupBy?: string;
 }
 
 interface UsersResponse {
@@ -55,6 +71,16 @@ export const useUsers = (params?: { search?: string; page?: number; limit?: numb
     queryKey: ["users", params],
     queryFn: async () => {
       const res = await axiosInstance.get<UsersResponse>("/user", { params });
+      return res.data;
+    },
+  });
+};
+
+export const useUserGroups = () => {
+  return useQuery({
+    queryKey: ["user-groups"],
+    queryFn: async () => {
+      const res = await axiosInstance.get<string[]>("/user/groups");
       return res.data;
     },
   });
@@ -99,11 +125,31 @@ export const useDeleteUser = () => {
   });
 };
 
-export const useRoles = () => {
+export const useRoles = (search?: string) => {
   return useQuery({
-    queryKey: ["roles"],
+    queryKey: ["roles", search],
     queryFn: async () => {
-      const res = await axiosInstance.get<RoleData[]>("/roles");
+      const res = await axiosInstance.get<RoleData[]>("/roles", { params: { search } });
+      return res.data;
+    },
+  });
+};
+
+export const useRoleGroups = () => {
+  return useQuery({
+    queryKey: ["role-groups"],
+    queryFn: async () => {
+      const res = await axiosInstance.get<string[]>("/roles/groups");
+      return res.data;
+    },
+  });
+};
+
+export const usePermissionGroups = () => {
+  return useQuery({
+    queryKey: ["permission-groups"],
+    queryFn: async () => {
+      const res = await axiosInstance.get<string[]>("/roles/permissions/groups");
       return res.data;
     },
   });
@@ -148,12 +194,51 @@ export const useDeleteRole = () => {
   });
 };
 
-export const usePermissions = () => {
+export const usePermissions = (search?: string) => {
   return useQuery({
-    queryKey: ["permissions"],
+    queryKey: ["permissions", search],
     queryFn: async () => {
-      const res = await axiosInstance.get<Permission[]>("/roles/permissions");
+      const res = await axiosInstance.get<Permission[]>("/roles/permissions", { params: { search } });
       return res.data;
+    },
+  });
+};
+
+export const useCreatePermission = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: Partial<Permission>) => {
+      const res = await axiosInstance.post("/roles/permissions", data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+    },
+  });
+};
+
+export const useDeletePermission = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: string) => {
+      const res = await axiosInstance.delete(`/roles/permissions/${id}`);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["permissions"] });
+    },
+  });
+};
+
+export const useUpdatePermission = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<Permission> }) => {
+      const res = await axiosInstance.patch(`/roles/permissions/${id}`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["permissions"] });
     },
   });
 };

@@ -12,7 +12,9 @@ import {
   XCircle,
   User as UserIcon,
   ShieldCheck,
+  Palette,
 } from "lucide-react";
+import LucideIcon from "@/components/shared/LucideIcon";
 import { FormInput } from "@/components/shared/forms/FormInput";
 import { FormSelect } from "@/components/shared/forms/FormSelect";
 import { FormMultiSelect } from "@/components/shared/forms/FormMultiSelect";
@@ -42,7 +44,7 @@ const GhostedSection = ({ title, data }: { title: string; data: any[] }) => (
           {title}
         </h4>
         <p className="text-[9px] font-bold opacity-60">
-          System immutable telemetry registry
+          User record metadata
         </p>
       </div>
     </div>
@@ -89,6 +91,10 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
     password: "",
     pin: user?.pin || "",
     image: user?.image || "",
+    primaryColor: user?.primaryColor || "",
+    secondaryColor: user?.secondaryColor || "",
+    iconName: user?.iconName || "",
+    groupBy: user?.groupBy || "",
   });
 
   const handleSubmit = async () => {
@@ -97,16 +103,16 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
         await toast.promise(
           updateUser.mutateAsync({ id: user!.id, data: formData }),
           {
-            loading: "Modulating Identity Matrix...",
-            success: "Entity synchronized successfully",
-            error: "Synchronization failure",
+            loading: "Updating user...",
+            success: "User updated successfully",
+            error: "Update failed",
           },
         );
       } else {
         await toast.promise(createUser.mutateAsync(formData), {
-          loading: "Manifesting New Identity...",
-          success: "Identity manifested in Matrix",
-          error: "Manifestation failed",
+          loading: "Creating user...",
+          success: "User created successfully",
+          error: "Creation failed",
         });
       }
       onClose();
@@ -118,8 +124,16 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
       {/* 🌌 ANTI-GRAVITY SYSTEM HEADER */}
       <div className="p-10 md:p-12 border-b border-gray-50 flex items-center justify-between bg-white/80 backdrop-blur-md relative z-50">
         <div className="flex items-center gap-8">
-          <div className="w-16 h-16 bg-gray-900 text-white rounded-[1.75rem] flex items-center justify-center shadow-2xl relative group/icon">
-            <Zap
+          <div 
+            className="w-16 h-16 rounded-[1.75rem] flex items-center justify-center shadow-2xl relative group/icon transition-colors duration-500"
+            style={{ 
+              backgroundColor: formData.primaryColor || '#111827',
+              color: 'white',
+              boxShadow: formData.primaryColor ? `0 15px 30px ${formData.primaryColor}30` : '0 15px 40px rgba(0,0,0,0.1)'
+            }}
+          >
+            <LucideIcon
+              name={formData.iconName || 'Zap'}
               size={28}
               strokeWidth={2.5}
               className="group-hover/icon:rotate-12 transition-transform duration-700"
@@ -128,10 +142,10 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
           </div>
           <div>
             <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-              {isEditing ? "Synchronize Entity" : "Manifest Identity"}
+              {isEditing ? "Edit User" : "Add User"}
             </h2>
             <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mt-2">
-              Anti-Gravity Control Matrix
+              Account Details
             </h4>
           </div>
         </div>
@@ -141,7 +155,7 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
             onClick={onClose}
             className="px-8 py-5 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-red-500 transition-all flex items-center gap-2"
           >
-            <XCircle size={14} /> Discard Intent
+            <XCircle size={14} /> Discard
           </button>
         </div>
       </div>
@@ -152,29 +166,32 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
           {/* 📍 LEFT PLANE: VISUAL IDENTITY (Sticky on LG+) */}
           <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8 lg:sticky lg:top-8">
             <FormImage
-              label="Neural Portrait"
+              label="Profile Photo"
               value={formData.image}
               onChange={(val) => setFormData({ ...formData, image: val })}
-              description="Holographic visualization used for system-wide identification."
+              description="Visual ID for receipts and staff directory."
             />
 
             {/* Status Badge Elevation */}
-            <div className="p-8 rounded-[2.5rem] bg-white/80 backdrop-blur-md border border-white/60 shadow-lg relative overflow-hidden group/status">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover/status:opacity-20 lg:hidden xl:block transition-opacity">
-                <CheckCircle2 size={64} strokeWidth={1} />
-              </div>
+            <div className="p-8 rounded-[2.5rem] bg-white border border-gray-100 shadow-sm relative overflow-hidden group/status">
+              <div className={`absolute top-0 left-0 w-1.5 h-full transition-colors duration-500 ${formData.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
               <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
-                Integrity Resonance
+                Operational Status
               </h5>
-              <div className="flex items-center gap-4">
-                <div
-                  className={`w-3 h-3 rounded-full animate-pulse ${formData.isActive ? "bg-emerald-500" : "bg-red-400"}`}
-                />
-                <span
-                  className={`text-xs font-black uppercase tracking-widest ${formData.isActive ? "text-emerald-600" : "text-red-500"}`}
-                >
-                  {formData.isActive ? "System Active" : "Access Restricted"}
-                </span>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <div
+                    className={`w-3 h-3 rounded-full animate-pulse ${formData.isActive ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]" : "bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.4)]"}`}
+                  />
+                  <span
+                    className={`text-sm font-black uppercase tracking-widest ${formData.isActive ? "text-emerald-600" : "text-red-500"}`}
+                  >
+                    {formData.isActive ? "Active Account" : "Disabled Account"}
+                  </span>
+                </div>
+                <div className={`p-3 rounded-2xl ${formData.isActive ? "bg-emerald-50 text-emerald-500" : "bg-red-50 text-red-500"}`}>
+                   <LucideIcon name={formData.isActive ? "Activity" : "ShieldAlert"} size={18} />
+                </div>
               </div>
             </div>
           </div>
@@ -184,12 +201,12 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
             {/* PLANE: BASIC PROFILE */}
             <FormSection
               icon={UserIcon}
-              title="Employee Profile"
-              subtitle="Primary Identity Parameters"
+              title="User Profile"
+              subtitle="Basic Account Information"
             >
               <div className="space-y-8">
                 <FormInput
-                  label="Full Entity Name"
+                  label="Full Name"
                   required
                   value={formData.name}
                   onChange={(e) =>
@@ -201,18 +218,18 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   <FormInput
-                    label="Neural Link (Email)"
+                    label="Email Address"
                     type="email"
                     required
                     value={formData.email}
                     onChange={(e) =>
                       setFormData({ ...formData, email: e.target.value })
                     }
-                    placeholder="entity@cartsens.pos"
+                    placeholder="name@example.com"
                     className="py-4 px-6"
                   />
                   <FormSearchSelect
-                    label="Assigned Clearance (Role)"
+                    label="User Role"
                     icon={ShieldCheck}
                     required
                     value={formData.roleId}
@@ -222,12 +239,12 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                     options={
                       roles?.map((r) => ({ value: r.id, label: r.name })) || []
                     }
-                    placeholder="Identify Level..."
+                    placeholder="Select role..."
                   />
                 </div>
 
                 <FormToggle
-                  label="Account Persistence State"
+                  label="Active Status"
                   icon={Zap}
                   checked={formData.isActive}
                   onChange={(val) =>
@@ -240,33 +257,33 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
             {/* PLANE: SPATIAL MAPPING */}
             <FormSection
               icon={Building2}
-              title="Spatial Distribution"
-              subtitle="Location Access Mapping"
+              title="Location Access"
+              subtitle="Manage branch permissions"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <FormPhone
-                  label="Direct Signal (Phone)"
+                  label="Phone Number"
                   value={formData.phone}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
-                  description="Primary contact for matrix-wide communications."
+                  description="Primary contact for staff."
                 />
                 <FormInput
-                  label="Coordinate Origin (Address)"
+                  label="Physical Address"
                   icon={MapPin}
                   value={formData.address}
                   onChange={(e) =>
                     setFormData({ ...formData, address: e.target.value })
                   }
-                  placeholder="Neural Hub, Scranton PA"
+                  placeholder="e.g. 123 Main St"
                   className="py-4 px-6"
                 />
               </div>
               <FormMultiSelect
-                label="Operative Nodes"
+                label="Accessible Locations"
                 icon={Building2}
-                placeholder="Search Hubble..."
+                placeholder="Search locations..."
                 options={
                   locations?.map((l) => ({ value: l.id, label: l.name })) || []
                 }
@@ -280,15 +297,15 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
             {/* PLANE: NEURAL AUTH */}
             <FormSection
               icon={Lock}
-              title="Security Clearance"
-              subtitle="Network Auth Parameters"
+              title="Security"
+              subtitle="Login credentials"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <FormInput
                   label={
                     isEditing
-                      ? "Rekey Keyframe (Password)"
-                      : "Initial Access Key"
+                      ? "Change Password"
+                      : "Password"
                   }
                   type="password"
                   required={!isEditing}
@@ -300,7 +317,7 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                   className="py-4 px-6"
                 />
                 <FormInput
-                  label="Terminal PIN Override"
+                  label="Terminal PIN"
                   icon={Fingerprint}
                   maxLength={4}
                   required
@@ -311,7 +328,55 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                       pin: e.target.value.replace(/\D/g, ""),
                     })
                   }
-                  placeholder="4-Digit Signature"
+                  placeholder="4-digit PIN"
+                  className="py-4 px-6"
+                />
+              </div>
+            </FormSection>
+
+            {/* PLANE: VISUAL IDENTITY */}
+            <FormSection
+              icon={Zap}
+              title="Visual Identity"
+              subtitle="Theming & Categorization"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <FormInput
+                  label="Primary Color"
+                  value={formData.primaryColor}
+                  onChange={(e) =>
+                    setFormData({ ...formData, primaryColor: e.target.value })
+                  }
+                  placeholder="e.g. #3b82f6"
+                  className="py-4 px-6"
+                />
+                <FormInput
+                  label="Secondary Color"
+                  value={formData.secondaryColor}
+                  onChange={(e) =>
+                    setFormData({ ...formData, secondaryColor: e.target.value })
+                  }
+                  placeholder="e.g. #eff6ff"
+                  className="py-4 px-6"
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
+                <FormInput
+                  label="Icon Name"
+                  value={formData.iconName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, iconName: e.target.value })
+                  }
+                  placeholder="e.g. Shield, Zap"
+                  className="py-4 px-6"
+                />
+                <FormInput
+                  label="Group By / Category"
+                  value={formData.groupBy}
+                  onChange={(e) =>
+                    setFormData({ ...formData, groupBy: e.target.value })
+                  }
+                  placeholder="e.g. Management Team"
                   className="py-4 px-6"
                 />
               </div>
@@ -319,22 +384,22 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
 
             {/* PLANE: METADATA */}
             <GhostedSection
-              title="Entity Telemetry"
+              title="User Details"
               data={[
                 {
-                  label: "Matrix Onboarding",
+                  label: "Created At",
                   value: user?.createdAt
                     ? new Date(user.createdAt).toLocaleDateString()
                     : "N/A",
                 },
                 {
-                  label: "Last Resonance",
+                  label: "Last Login",
                   value: user?.lastLogin
                     ? new Date(user.lastLogin).toLocaleDateString()
-                    : "Inactive",
+                    : "Never",
                 },
-                { label: "Creator Signature", value: "ADMIN-001" },
-                { label: "Matrix Flux", value: "STABLE" },
+                { label: "Created By", value: "Admin" },
+                { label: "Account Status", value: "STABLE" },
               ]}
             />
           </div>
@@ -348,7 +413,7 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
             <CheckCircle2 size={24} />
           </div>
           <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-            All neural pathways stable
+            All changes saved successfully
           </p>
         </div>
         <button
@@ -356,7 +421,7 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
           className="px-16 py-6 bg-gray-900 text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.3em] shadow-[0_15px_40px_rgba(0,0,0,0.1)] hover:bg-purple-600 hover:shadow-purple-500/20 transition-all active:scale-95 flex items-center gap-4"
         >
           <CheckCircle2 size={18} strokeWidth={3} />
-          {isEditing ? "Synchronize Matrix" : "Deploy Entity"}
+          {isEditing ? "Update User" : "Add User"}
         </button>
       </div>
     </div>

@@ -15,16 +15,18 @@ export default function AuthProvider({
 
   useEffect(() => {
     if (isSuccess && user) {
+      console.log("[AuthProvider] Syncing user to Redux:", user.name, "(ID:", user.id, ")");
       dispatch(
         setUser({
           id: user.id,
           name: user.name,
           email: user.email,
           role: user.role,
-          avatar: null, // the backend doesn't seem to return an avatar currently, but we have the slot for it
+          avatar: (user as any).image || (user as any).avatar || null,
         }),
       );
     } else if (isError) {
+      console.warn("[AuthProvider] Session fetch failed or unauthorized.");
       dispatch(clearUser());
     }
   }, [user, isSuccess, isError, dispatch]);

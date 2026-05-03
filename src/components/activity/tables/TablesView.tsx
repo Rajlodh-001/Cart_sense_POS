@@ -9,7 +9,7 @@ import PaymentModal from "@/components/activity/PaymentModal";
 import toast from "react-hot-toast";
 
 const TablesView = () => {
-  const { data: dbTables, isLoading } = useTables();
+  const { data: dbTables, isLoading } = useTables(true);
   const tables: Table[] = dbTables || [];
 
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);

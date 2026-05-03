@@ -9,6 +9,8 @@ import AdminProductTable from "@/components/admin/inventory/AdminProductTable";
 import AddProductModal from "@/components/admin/inventory/AddProductModal";
 import AddCategoryModal from "@/components/admin/inventory/AddCategoryModal";
 import AddModifierModal from "@/components/admin/inventory/AddModifierModal";
+import ConfirmModal from "@/components/shared/ConfirmModal";
+import toast from "react-hot-toast";
 
 type TabId = "products" | "categories" | "modifiers";
 
@@ -21,6 +23,7 @@ export default function InventoryPage() {
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
   const [editingModifier, setEditingModifier] = useState<any | null>(null);
+  const [confirmDeleteCategory, setConfirmDeleteCategory] = useState<{ id: string; name: string } | null>(null);
 
   const { data: products = [], isLoading: isLoadingProducts } = useInitialProducts();
   const { data: categories = [], isLoading: isLoadingCategories } = useCategories();
@@ -45,14 +48,27 @@ export default function InventoryPage() {
   };
 
   const handleDeleteCategory = (id: string, name: string) => {
-    if (confirm(`Delete category "${name}"? This will not delete the products inside it, but they will become uncategorized.`)) {
-      deleteCategoryMutation.mutate(id);
-    }
+    setConfirmDeleteCategory({ id, name });
+  };
+
+  const handleConfirmDeleteCategory = async () => {
+    if (!confirmDeleteCategory) return;
+    try {
+      await toast.promise(deleteCategoryMutation.mutateAsync(confirmDeleteCategory.id), {
+        loading: "Deleting category...",
+        success: "Category deleted successfully",
+        error: (err: any) => {
+          const msg = err.response?.data?.error?.details || err.response?.data?.error?.message;
+          return msg || "Failed to delete category";
+        },
+      });
+      setConfirmDeleteCategory(null);
+    } catch (error) {}
   };
 
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Page Header ... (keep lines 42-69) */}
+      {/* Page Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
         <div>
           <h2 className="text-4xl font-black text-gray-900 tracking-tight">Inventory</h2>
@@ -90,7 +106,7 @@ export default function InventoryPage() {
         </div>
       </div>
 
-      {/* Tabs Navigation ... (keep lines 70-164) */}
+      {/* Tabs Navigation */}
       <div className="flex items-center gap-2 p-1.5 bg-gray-100/80 rounded-3xl w-fit">
         {[
           { id: "products", label: "Products", icon: Package },
@@ -306,6 +322,16 @@ export default function InventoryPage() {
           onClose={() => { setIsModifierModalOpen(false); setEditingModifier(null); }} 
         />
       </Modal>
+
+      <ConfirmModal 
+        isOpen={!!confirmDeleteCategory}
+        onClose={() => setConfirmDeleteCategory(null)}
+        onConfirm={handleConfirmDeleteCategory}
+        title="Delete Category"
+        message={`Are you sure you want to delete "${confirmDeleteCategory?.name}"? This will not delete the products inside it, but they will become uncategorized.`}
+        confirmText="Yes, Delete"
+        isLoading={deleteCategoryMutation.isPending}
+      />
     </div>
   );
 }

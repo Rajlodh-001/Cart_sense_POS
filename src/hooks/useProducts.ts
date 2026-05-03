@@ -25,6 +25,10 @@ export interface Product {
   weight?: number;
   recipe?: any;
   cookingDescription?: any;
+  primaryColor?: string;
+  secondaryColor?: string;
+  iconName?: string;
+  groupBy?: string;
   
   modifiers?: { id: string; name: string; note?: string }[];
   modifierIds?: string[];

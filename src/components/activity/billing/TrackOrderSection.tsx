@@ -346,13 +346,37 @@ const TrackCard = ({ data, isVertical, onOpenModal }: any) => {
 const OrderDetailModal = ({ order, onClose, onMarkAsDone, isProcessing }: any) => {
   if (!order) return null;
   const items = order.items || [];
+  const updateItemStatus = useUpdateOrderItemStatus();
+
+  const handleStatusChange = async (itemId: string, currentStatus: string) => {
+    const statuses: any[] = ['RECEIVED', 'PREPARING', 'READY', 'SERVED'];
+    const currentIndex = statuses.indexOf(currentStatus);
+    const nextStatus = statuses[(currentIndex + 1) % statuses.length];
+
+    try {
+      await updateItemStatus.mutateAsync({ id: itemId, status: nextStatus });
+      toast.success(`Item updated to ${nextStatus}`);
+    } catch (error) {
+      toast.error("Failed to update item status");
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'RECEIVED': return 'bg-gray-100 text-gray-600';
+      case 'PREPARING': return 'bg-orange-100 text-orange-600';
+      case 'READY': return 'bg-blue-100 text-blue-600';
+      case 'SERVED': return 'bg-emerald-100 text-emerald-600';
+      default: return 'bg-gray-100 text-gray-600';
+    }
+  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
+      <div className="bg-white w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200">
         
         {/* Modal Header */}
-        <div className="bg-blue-600 p-6 text-white relative">
+        <div className="bg-gray-900 p-6 text-white relative">
           <button 
             onClick={onClose}
             className="absolute top-4 right-4 p-2 bg-white/20 hover:bg-white/30 rounded-full transition"
@@ -360,50 +384,76 @@ const OrderDetailModal = ({ order, onClose, onMarkAsDone, isProcessing }: any) =
             <X size={18} className="text-white" />
           </button>
           
-          <h2 className="text-2xl font-bold mb-1">{order.customer?.name || "Walk-in"}</h2>
-          <div className="flex gap-4 text-blue-100 text-sm">
-            <span className="flex items-center gap-1"><MapPin size={14}/> Table {typeof order.table === 'object' ? order.table?.name : (order.table || 'N/A')}</span>
-            <span className="flex items-center gap-1"><User size={14}/> Dine In</span>
+          <div className="flex justify-between items-end">
+            <div>
+              <h2 className="text-2xl font-black mb-1 tracking-tight">{order.customer?.name || "Walk-in"}</h2>
+              <div className="flex gap-4 text-gray-400 text-[10px] font-black uppercase tracking-widest">
+                <span className="flex items-center gap-1"><MapPin size={12}/> Table {typeof order.table === 'object' ? order.table?.name : (order.table || 'N/A')}</span>
+                <span className="flex items-center gap-1"><Clock size={12}/> {new Date(order.orderTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className="text-[10px] font-black text-gray-500 uppercase tracking-widest block mb-1">Status</span>
+              <span className={`text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider ${
+                order.status === 'COMPLETED' ? 'bg-emerald-500 text-white' : 'bg-orange-500 text-white'
+              }`}>
+                {order.status}
+              </span>
+            </div>
           </div>
         </div>
 
         {/* Modal Body */}
-        <div className="p-6 max-h-[60vh] overflow-y-auto custom-scrollbar">
-          <div className="flex justify-between items-center mb-4">
-            <h3 className="font-bold text-gray-800">Order Summary</h3>
-            <span className={`text-xs font-bold px-3 py-1 rounded-full ${
-              order.isDone ? 'bg-emerald-100 text-emerald-700' : 'bg-orange-100 text-orange-700'
-            }`}>
-              {order.status}
-            </span>
+        <div className="p-6 max-h-[50vh] overflow-y-auto custom-scrollbar bg-gray-50">
+          <div className="flex items-center gap-3 mb-6">
+            <Loader2 className={`text-blue-600 ${updateItemStatus.isPending ? 'animate-spin' : ''}`} size={20} />
+            <h3 className="text-sm font-black text-gray-900 uppercase tracking-[0.2em]">Kitchen Preparation</h3>
           </div>
 
-          <ul className="space-y-3">
+          <div className="grid gap-3">
             {items.map((item: any, i: number) => (
-              <li key={i} className="flex justify-between items-center p-3 bg-gray-50 rounded-xl border border-gray-100">
-                <span className="text-sm font-medium text-gray-700">{item.name}</span>
-                <span className="text-xs font-bold text-gray-400">x{item.quantity}</span>
-              </li>
+              <div key={i} className="bg-white p-4 rounded-2xl border border-gray-100 flex items-center justify-between group hover:border-blue-200 transition-all shadow-sm">
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center text-gray-900 font-black text-sm group-hover:bg-blue-50 group-hover:text-blue-600 transition-colors">
+                    {item.quantity}x
+                  </div>
+                  <div>
+                    <p className="text-sm font-black text-gray-800 tracking-tight">{item.name}</p>
+                    {item.note && <p className="text-[10px] text-orange-500 font-bold mt-0.5 uppercase tracking-wider">Note: {item.note}</p>}
+                  </div>
+                </div>
+                
+                <button 
+                  onClick={() => handleStatusChange(item.id, item.status)}
+                  disabled={updateItemStatus.isPending}
+                  className={`
+                    px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest transition-all active:scale-95
+                    ${getStatusColor(item.status)}
+                    hover:brightness-95 shadow-sm
+                  `}
+                >
+                  {item.status}
+                </button>
+              </div>
             ))}
-          </ul>
-          
-          <div className="mt-6 pt-4 border-t border-gray-100 flex justify-between items-center">
-            <span className="text-gray-500 font-medium">Total Items</span>
-            <span className="text-xl font-bold text-gray-800">{items.length}</span>
           </div>
         </div>
 
         {/* Modal Footer */}
-        <div className="p-4 bg-gray-50 border-t border-gray-100 flex gap-3">
-           <button onClick={onClose} disabled={isProcessing} className="flex-1 py-3 text-sm font-bold text-gray-500 bg-white border border-gray-200 rounded-xl hover:bg-gray-100 transition disabled:opacity-50">
-             Close
+        <div className="p-6 bg-white border-t border-gray-100 flex gap-4">
+           <button 
+             onClick={onClose} 
+             disabled={isProcessing} 
+             className="flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400 bg-gray-50 rounded-2xl hover:bg-gray-100 transition disabled:opacity-50"
+           >
+             Close View
            </button>
            <button 
-            disabled={isProcessing}
+            disabled={isProcessing || order.status === 'COMPLETED'}
             onClick={() => onMarkAsDone(order.id)}
-            className="flex-1 py-3 text-sm font-bold text-white bg-blue-600 rounded-xl shadow-lg shadow-blue-200 hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
+            className="flex-1 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-white bg-blue-600 rounded-2xl shadow-xl shadow-blue-200 hover:bg-blue-700 transition disabled:opacity-50 flex items-center justify-center gap-2"
            >
-             {isProcessing ? <Loader2 className="animate-spin" size={16} /> : "Mark as Done"}
+             {isProcessing ? <Loader2 className="animate-spin" size={16} /> : "Finalize Order"}
            </button>
         </div>
       </div>

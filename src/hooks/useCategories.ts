@@ -8,6 +8,10 @@ export interface Category {
   color?: string;
   imageUrl?: string;
   icon?: string;
+  primaryColor?: string;
+  secondaryColor?: string;
+  iconName?: string;
+  groupBy?: string;
   _count?: {
     products: number;
   };

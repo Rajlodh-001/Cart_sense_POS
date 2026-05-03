@@ -22,7 +22,7 @@ const SearchBox: React.FC<SearchBoxProps> = ({
           type="text"
           placeholder="Search menu items..."
           className="w-full pl-14 pr-16 py-4 rounded-full bg-white border border-gray-100 shadow-sm text-gray-700 placeholder-gray-400 focus:ring-4 focus:ring-primary/5 focus:border-primary transition-all duration-300 outline-none font-bold text-sm"
-          value={searchQuery}
+          value={searchQuery} 
           onChange={(e) => onSearchChange(e.target.value)}
         />
 
