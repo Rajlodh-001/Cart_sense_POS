@@ -107,6 +107,8 @@ export function useActivateStore() {
 export function useLogin() {
   const queryClient = useQueryClient();
   const router = useRouter();
+  const searchParams = typeof window !== 'undefined' ? new URLSearchParams(window.location.search) : null;
+  const nextPath = searchParams?.get('next') || "/pos";
 
   return useMutation({
     mutationFn: async (credentials: { 
@@ -127,7 +129,7 @@ export function useLogin() {
       }
       queryClient.setQueryData(["authUser"], data.user);
       queryClient.invalidateQueries({ queryKey: ["sessionStatus"] });
-      router.push("/pos");
+      router.push(nextPath);
     },
   });
 }

@@ -5,11 +5,12 @@ export interface UserState {
   name: string | null;
   email: string | null;
   avatar: string | null;
-  role: any | null;
+  role: Record<string, unknown> | null;
   roleId: string | null;
   permissions: string[];
-  preferences: any;
+  preferences: Record<string, unknown> | null;
   isAuthenticated: boolean;
+  deviceId: string | null;
 }
 
 const initialState: UserState = {
@@ -22,6 +23,7 @@ const initialState: UserState = {
   permissions: [],
   preferences: null,
   isAuthenticated: false,
+  deviceId: null,
 };
 
 const userSlice = createSlice({
@@ -40,6 +42,7 @@ const userSlice = createSlice({
       if (action.payload.roleId) state.roleId = action.payload.roleId;
       if (action.payload.permissions) state.permissions = action.payload.permissions;
       if (action.payload.preferences) state.preferences = action.payload.preferences;
+      if (action.payload.deviceId) state.deviceId = action.payload.deviceId;
       state.isAuthenticated = true;
     },
     clearUser: (state) => {
@@ -52,6 +55,7 @@ const userSlice = createSlice({
       state.permissions = [];
       state.preferences = null;
       state.isAuthenticated = false;
+      state.deviceId = null;
     },
   },
 });

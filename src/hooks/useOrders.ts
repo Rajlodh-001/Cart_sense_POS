@@ -4,6 +4,7 @@ import axiosInstance from "@/lib/axios";
 export interface CreateOrderPayload {
   orderNo: number;
   userId: string;
+  deviceId?: string;
   customerId?: string;
   tableId?: string;
   seatCount?: number;

@@ -16,15 +16,25 @@ export default function AuthProvider({
   useEffect(() => {
     if (isSuccess && user) {
       console.log("[AuthProvider] Syncing user to Redux:", user.name, "(ID:", user.id, ")");
-      dispatch(
-        setUser({
-          id: user.id,
-          name: user.name,
-          email: user.email,
-          role: user.role,
-          avatar: (user as any).image || (user as any).avatar || null,
-        }),
-      );
+      
+      // Temporary: Auto-fetch first device for location to bind to session
+      import("@/lib/axios").then((module) => {
+        module.default.get("/location/devices").then((res) => {
+          const deviceId = res.data[0]?.id || null;
+          dispatch(
+            setUser({
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              role: user.role,
+              avatar: (user as Record<string, string>).image || (user as Record<string, string>).avatar || null,
+              deviceId: deviceId,
+            }),
+          );
+        }).catch(err => {
+          console.error("Failed to fetch devices for session bind", err);
+        });
+      });
     } else if (isError) {
       console.warn("[AuthProvider] Session fetch failed or unauthorized.");
       dispatch(clearUser());

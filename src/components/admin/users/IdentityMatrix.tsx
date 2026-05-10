@@ -15,14 +15,17 @@ import {
   Palette,
 } from "lucide-react";
 import LucideIcon from "@/components/shared/LucideIcon";
-import { FormInput } from "@/components/shared/forms/FormInput";
-import { FormSelect } from "@/components/shared/forms/FormSelect";
-import { FormMultiSelect } from "@/components/shared/forms/FormMultiSelect";
-import { FormToggle } from "@/components/shared/forms/FormToggle";
-import { FormImage } from "@/components/shared/forms/FormImage";
-import { FormSection } from "@/components/shared/forms/FormSection";
+import { 
+  FormInput, 
+  FormSelect, 
+  FormMultiSelect, 
+  FormToggle, 
+  FormImage, 
+  FormSection, 
+  FormSearchSelect,
+} from "@/components/shared/forms";
+import { FormLayout } from "@/components/shared/forms/FormLayout";
 import FormPhone from "@/components/shared/forms/FormPhone";
-import { FormSearchSelect } from "@/components/shared/forms/FormSearchSelect";
 import {
   useCreateUser,
   useUpdateUser,
@@ -90,14 +93,16 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
     accessibleLocations: user?.accessibleLocationIds || [],
     password: "",
     pin: user?.pin || "",
-    image: user?.image || "",
+    imageUrl: user?.imageUrl || "",
+    icon: user?.icon || "",
     primaryColor: user?.primaryColor || "",
     secondaryColor: user?.secondaryColor || "",
     iconName: user?.iconName || "",
     groupBy: user?.groupBy || "",
   });
 
-  const handleSubmit = async () => {
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     try {
       if (isEditing) {
         await toast.promise(
@@ -120,59 +125,27 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
   };
 
   return (
-    <div className="flex flex-col h-full bg-white relative font-sans overflow-hidden">
-      {/* 🌌 ANTI-GRAVITY SYSTEM HEADER */}
-      <div className="p-10 md:p-12 border-b border-gray-50 flex items-center justify-between bg-white/80 backdrop-blur-md relative z-50">
-        <div className="flex items-center gap-8">
-          <div 
-            className="w-16 h-16 rounded-[1.75rem] flex items-center justify-center shadow-2xl relative group/icon transition-colors duration-500"
-            style={{ 
-              backgroundColor: formData.primaryColor || '#111827',
-              color: 'white',
-              boxShadow: formData.primaryColor ? `0 15px 30px ${formData.primaryColor}30` : '0 15px 40px rgba(0,0,0,0.1)'
-            }}
-          >
-            <LucideIcon
-              name={formData.iconName || 'Zap'}
-              size={28}
-              strokeWidth={2.5}
-              className="group-hover/icon:rotate-12 transition-transform duration-700"
-            />
-            <div className="absolute inset-0 bg-purple-500/20 blur-2xl opacity-0 group-hover/icon:opacity-100 transition-opacity" />
-          </div>
-          <div>
-            <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-              {isEditing ? "Edit User" : "Add User"}
-            </h2>
-            <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.4em] mt-2">
-              Account Details
-            </h4>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-4">
-          <button
-            onClick={onClose}
-            className="px-8 py-5 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-red-500 transition-all flex items-center gap-2"
-          >
-            <XCircle size={14} /> Discard
-          </button>
-        </div>
-      </div>
-
-      <div className="flex-1 overflow-y-auto custom-scrollbar bg-gray-50/30 p-6 md:p-10 lg:p-16">
-        {/* 🛡️ MASTER GRID STABILIZER: 12-Column Split (Responsive Transition at LG) */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 w-full max-w-7xl mx-auto items-start">
-          {/* 📍 LEFT PLANE: VISUAL IDENTITY (Sticky on LG+) */}
-          <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8 lg:sticky lg:top-8">
+    <FormLayout
+      title={isEditing ? "Edit User" : "Add User"}
+      subtitle="Identity Matrix"
+      iconName={formData.iconName || "User"}
+      primaryColor={formData.primaryColor || "#111827"}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      isPending={createUser.isPending || updateUser.isPending}
+      submitLabel={isEditing ? "Update Identity" : "Deploy Identity"}
+    >
+        {/* 🛡️ MASTER GRID STABILIZER: 12-Column Split */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 w-full items-start">
+          {/* 📍 LEFT PLANE: VISUAL IDENTITY */}
+          <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8">
             <FormImage
               label="Profile Photo"
-              value={formData.image}
-              onChange={(val) => setFormData({ ...formData, image: val })}
+              value={formData.imageUrl}
+              onChange={(val) => setFormData({ ...formData, imageUrl: val })}
               description="Visual ID for receipts and staff directory."
             />
 
-            {/* Status Badge Elevation */}
             <div className="p-8 rounded-[2.5rem] bg-white border border-gray-100 shadow-sm relative overflow-hidden group/status">
               <div className={`absolute top-0 left-0 w-1.5 h-full transition-colors duration-500 ${formData.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
               <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
@@ -196,9 +169,8 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
             </div>
           </div>
 
-          {/* ⚡ RIGHT PLANE: CORE DATA (Dense Matrix) */}
-          <div className="lg:col-span-8 flex flex-col gap-10 pb-20">
-            {/* PLANE: BASIC PROFILE */}
+          {/* ⚡ RIGHT PLANE: CORE DATA */}
+          <div className="lg:col-span-8 flex flex-col gap-10">
             <FormSection
               icon={UserIcon}
               title="User Profile"
@@ -254,7 +226,6 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
               </div>
             </FormSection>
 
-            {/* PLANE: SPATIAL MAPPING */}
             <FormSection
               icon={Building2}
               title="Location Access"
@@ -294,7 +265,6 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
               />
             </FormSection>
 
-            {/* PLANE: NEURAL AUTH */}
             <FormSection
               icon={Lock}
               title="Security"
@@ -334,7 +304,6 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
               </div>
             </FormSection>
 
-            {/* PLANE: VISUAL IDENTITY */}
             <FormSection
               icon={Zap}
               title="Visual Identity"
@@ -362,7 +331,7 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
                 <FormInput
-                  label="Icon Name"
+                  label="Lucide Icon"
                   value={formData.iconName}
                   onChange={(e) =>
                     setFormData({ ...formData, iconName: e.target.value })
@@ -370,6 +339,17 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                   placeholder="e.g. Shield, Zap"
                   className="py-4 px-6"
                 />
+                <FormInput
+                  label="Alt Icon / Simple"
+                  value={formData.icon}
+                  onChange={(e) =>
+                    setFormData({ ...formData, icon: e.target.value })
+                  }
+                  placeholder="e.g. coffee, star"
+                  className="py-4 px-6"
+                />
+              </div>
+              <div className="mt-8">
                 <FormInput
                   label="Group By / Category"
                   value={formData.groupBy}
@@ -382,7 +362,6 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
               </div>
             </FormSection>
 
-            {/* PLANE: METADATA */}
             <GhostedSection
               title="User Details"
               data={[
@@ -398,33 +377,12 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                     ? new Date(user.lastLogin).toLocaleDateString()
                     : "Never",
                 },
-                { label: "Created By", value: "Admin" },
                 { label: "Account Status", value: "STABLE" },
               ]}
             />
           </div>
         </div>
-      </div>
-
-      {/* 🚀 DEPLOYMENT FOOTER */}
-      <div className="p-10 border-t border-gray-100 flex items-center justify-between bg-white relative z-50">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-500">
-            <CheckCircle2 size={24} />
-          </div>
-          <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">
-            All changes saved successfully
-          </p>
-        </div>
-        <button
-          onClick={handleSubmit}
-          className="px-16 py-6 bg-gray-900 text-white rounded-[1.5rem] font-black text-[11px] uppercase tracking-[0.3em] shadow-[0_15px_40px_rgba(0,0,0,0.1)] hover:bg-purple-600 hover:shadow-purple-500/20 transition-all active:scale-95 flex items-center gap-4"
-        >
-          <CheckCircle2 size={18} strokeWidth={3} />
-          {isEditing ? "Update User" : "Add User"}
-        </button>
-      </div>
-    </div>
+    </FormLayout>
   );
 };
 

@@ -146,7 +146,7 @@
 "use client";
 import React, { useRef, useState, useMemo } from 'react';
 import { Search, ChevronLeft, ChevronRight, Layout, LayoutList, X, Clock, MapPin, User, Loader2 } from 'lucide-react';
-import { useOrders, useUpdateOrder } from '@/hooks/useOrders';
+import { useOrders, useUpdateOrder, useUpdateOrderItemStatus } from '@/hooks/useOrders';
 import toast from 'react-hot-toast';
 
 // --- MOCK DATA ---
@@ -165,9 +165,11 @@ const TrackOrderSection = () => {
     try {
       await updateOrder.mutateAsync({
         id: orderId,
-        status: 'COMPLETED',
-        paymentMethod: 'CARD', // AS PER USER REQUEST
-        notes: 'KDS COMPLETE', // AS PER USER REQUEST
+        data: {
+          status: 'COMPLETED',
+          paymentMethod: 'CARD', // AS PER USER REQUEST
+          notes: 'KDS COMPLETE', // AS PER USER REQUEST
+        }
       });
       toast.success("Order completed and settled (Card)");
       setSelectedOrder(null);
@@ -344,9 +346,10 @@ const TrackCard = ({ data, isVertical, onOpenModal }: any) => {
 
 // --- COMPONENT: Modal ---
 const OrderDetailModal = ({ order, onClose, onMarkAsDone, isProcessing }: any) => {
+  const updateItemStatus = useUpdateOrderItemStatus();
+  
   if (!order) return null;
   const items = order.items || [];
-  const updateItemStatus = useUpdateOrderItemStatus();
 
   const handleStatusChange = async (itemId: string, currentStatus: string) => {
     const statuses: any[] = ['RECEIVED', 'PREPARING', 'READY', 'SERVED'];

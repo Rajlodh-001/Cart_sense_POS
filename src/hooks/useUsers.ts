@@ -33,6 +33,7 @@ export interface User {
   pin?: string;
   preferences?: any;
   accessibleLocationIds?: string[];
+  icon?: string;
   primaryColor?: string;
   secondaryColor?: string;
   iconName?: string;

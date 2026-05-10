@@ -15,8 +15,12 @@ import {
   Key,
   Palette
 } from "lucide-react";
-import { FormInput } from "@/components/shared/forms/FormInput";
-import { FormSection } from "@/components/shared/forms/FormSection";
+import { 
+  FormInput, 
+  FormSection, 
+  FormCreatableSelect,
+} from "@/components/shared/forms";
+import { FormLayout } from "@/components/shared/forms/FormLayout";
 import {
   useCreateRole,
   useUpdateRole,
@@ -26,7 +30,6 @@ import {
   useRoleGroups,
   usePermissionGroups
 } from "@/hooks/useUsers";
-import { FormCreatableSelect } from "@/components/shared/forms/FormCreatableSelect";
 import LucideIcon from "@/components/shared/LucideIcon";
 import toast from "react-hot-toast";
 
@@ -58,6 +61,7 @@ const AddRoleModal: React.FC<AddRoleModalProps> = ({ role, onClose }) => {
   // NEW: Permission Creation State
   const [showAddPermission, setShowAddPermission] = useState(false);
   const [newPerm, setNewPerm] = useState({
+    name: "",
     resource: "",
     action: "",
     category: "GENERAL",
@@ -119,8 +123,8 @@ const AddRoleModal: React.FC<AddRoleModalProps> = ({ role, onClose }) => {
     } catch (error) {}
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     try {
       if (isEditing) {
         await toast.promise(
@@ -143,41 +147,16 @@ const AddRoleModal: React.FC<AddRoleModalProps> = ({ role, onClose }) => {
   };
 
   return (
-    <div className="flex-1 min-h-0 flex flex-col bg-white relative">
-      {/* Product Style Header */}
-      <div className="px-10 py-10 border-b border-gray-50 flex items-center justify-between bg-white">
-        <div className="flex items-center gap-6">
-          <div 
-            className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center shadow-2xl transition-all duration-500"
-            style={{ 
-                backgroundColor: formData.primaryColor || '#9333ea',
-                color: 'white',
-                boxShadow: formData.primaryColor ? `0 15px 40px ${formData.primaryColor}30` : '0 15px 40px rgba(0,0,0,0.1)'
-            }}
-          >
-            <ShieldAlert size={28} strokeWidth={2.5} />
-          </div>
-          <div>
-            <h2 className="text-3xl font-black text-gray-900 tracking-tight">
-              {isEditing ? "Edit Role" : "New Role"}
-            </h2>
-            <h4 className="text-[11px] font-black text-gray-400 uppercase tracking-[0.3em] mt-1">
-              Identity Hub
-            </h4>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:text-red-500 transition-all border border-gray-100"
-        >
-          <XCircle size={20} />
-        </button>
-      </div>
-
-      <form
-        onSubmit={handleSubmit}
-        className="flex-1 min-h-0 overflow-y-auto custom-scrollbar p-12"
-      >
+    <FormLayout
+      title={isEditing ? "Edit Role" : "New Role"}
+      subtitle="Identity Hub"
+      iconName={formData.iconName || "ShieldAlert"}
+      primaryColor={formData.primaryColor || "#9333ea"}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      isPending={createRole.isPending || updateRole.isPending}
+      submitLabel={isEditing ? "Update Role" : "Create Role"}
+    >
         <div className="max-w-6xl mx-auto space-y-16">
           {/* TOP BROAD SECTION: DEFINITION */}
           <FormSection
@@ -466,26 +445,7 @@ const AddRoleModal: React.FC<AddRoleModalProps> = ({ role, onClose }) => {
              </div>
           </FormSection>
         </div>
-      </form>
-
-      {/* Footer */}
-      <div className="px-10 py-10 border-t border-gray-50 flex items-center justify-between bg-gray-50/50">
-        <button
-          type="button"
-          onClick={onClose}
-          className="px-10 py-5 text-[11px] font-black uppercase tracking-[0.3em] text-gray-400 hover:text-gray-900 transition-colors"
-        >
-          Discard
-        </button>
-        <button
-          onClick={handleSubmit}
-          className="px-12 py-5 bg-gray-900 text-white rounded-2xl font-black text-[11px] uppercase tracking-[0.2em] shadow-2xl shadow-gray-900/20 hover:bg-purple-600 transition-all flex items-center gap-3"
-        >
-          <ShieldCheck size={16} strokeWidth={3} />
-          {isEditing ? "Update Role" : "Create Role"}
-        </button>
-      </div>
-    </div>
+    </FormLayout>
   );
 };
 

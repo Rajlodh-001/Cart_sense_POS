@@ -109,13 +109,13 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ category, onClose }
               <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-5 leading-none">Live Preview</label>
               <div 
                 className="h-56 rounded-[3.5rem] border border-gray-100 shadow-premium flex flex-col items-center justify-center relative overflow-hidden group p-10 transition-all duration-500"
-                style={{ backgroundColor: formData.color + "15" }}
+                style={{ backgroundColor: formData.primaryColor ? formData.primaryColor + "15" : "#f9fafb" }}
               >
                 <div 
                   className="w-20 h-20 rounded-[1.75rem] flex items-center justify-center mb-5 shadow-2xl transition-all group-hover:scale-110 group-hover:rotate-3 duration-500"
-                  style={{ backgroundColor: formData.color, color: "#fff" }}
+                  style={{ backgroundColor: formData.primaryColor || '#111827', color: "#fff" }}
                 >
-                  <Layers size={36} strokeWidth={1.5} />
+                  <LucideIcon name={formData.iconName || 'Layers'} size={36} className="relative z-10" />
                 </div>
                 <h4 className="text-2xl font-black text-gray-900 tracking-tight">{formData.name || "Category Name"}</h4>
                 <p className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mt-2">Active Taxonomy Division</p>
@@ -123,7 +123,7 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ category, onClose }
                 {/* Decoration */}
                 <div 
                   className="absolute bottom-0 right-0 w-48 h-48 blur-[100px] -mr-24 -mb-24 opacity-30"
-                  style={{ backgroundColor: formData.color }}
+                  style={{ backgroundColor: formData.primaryColor || 'transparent' }}
                 />
               </div>
             </div>
@@ -138,16 +138,16 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ category, onClose }
                      <div className="relative">
                        <input
                          type="color"
-                         value={formData.color}
-                         onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                         value={formData.primaryColor || "#000000"}
+                         onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
                          className="w-16 h-16 rounded-2xl cursor-pointer border-none bg-transparent outline-none p-0 overflow-hidden"
                        />
                        <div className="absolute inset-0 rounded-2xl border-4 border-white pointer-events-none" />
                      </div>
                      <input
                        type="text"
-                       value={formData.color}
-                       onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                       value={formData.primaryColor}
+                       onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
                        className="flex-1 px-6 bg-transparent font-black tracking-widest text-gray-900 outline-none uppercase"
                        placeholder="#3B82F6"
                      />
@@ -157,32 +157,18 @@ const AddCategoryModal: React.FC<AddCategoryModalProps> = ({ category, onClose }
                <FormInput 
                  label="Menu Search Icon"
                  icon={SmilePlus}
-                 value={formData.icon}
-                 onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
+                 value={formData.iconName}
+                 onChange={(e) => setFormData({ ...formData, iconName: e.target.value })}
                  placeholder="e.g. Layers, Coffee, Pizza"
                />
 
                <div className="pt-8 border-t border-gray-100 space-y-8">
                   <div className="grid grid-cols-2 gap-6">
                     <FormInput 
-                      label="Primary Color"
-                      value={formData.primaryColor}
-                      onChange={(e) => setFormData({ ...formData, primaryColor: e.target.value })}
-                      placeholder="#HEX"
-                    />
-                    <FormInput 
                       label="Secondary Color"
                       value={formData.secondaryColor}
                       onChange={(e) => setFormData({ ...formData, secondaryColor: e.target.value })}
                       placeholder="#HEX"
-                    />
-                  </div>
-                  <div className="grid grid-cols-2 gap-6">
-                    <FormInput 
-                      label="Icon Name"
-                      value={formData.iconName}
-                      onChange={(e) => setFormData({ ...formData, iconName: e.target.value })}
-                      placeholder="e.g. Flame, Pizza"
                     />
                     <FormInput 
                       label="Group By Label"

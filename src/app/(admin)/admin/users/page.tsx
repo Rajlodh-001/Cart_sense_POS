@@ -40,6 +40,7 @@ import AddUserModal from "@/components/admin/users/AddUserModal";
 import AddRoleModal from "@/components/admin/users/AddRoleModal";
 import AddPermissionModal from "@/components/admin/users/AddPermissionModal";
 import { IdentityMatrix } from "@/components/admin/users/IdentityMatrix";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import toast from "react-hot-toast";
 
 type TabTab = "USERS" | "ROLES" | "PERMISSIONS" | "INSIGHTS";
@@ -164,9 +165,9 @@ export default function UsersPage() {
 
     return (
       <div
-        className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${config.bg} ${config.text} text-[10px] font-black uppercase tracking-wider border border-current/10`}
+        className={`flex items-center gap-1.5 px-3 py-1 rounded-full ${config.bg} ${config.text} text-[10px] font-black uppercase tracking-wider border border-current/10 whitespace-nowrap`}
       >
-        <Icon size={12} strokeWidth={3} />
+        <Icon size={12} strokeWidth={3} className="shrink-0" />
         {config.label}
       </div>
     );
@@ -261,53 +262,53 @@ export default function UsersPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-[3.5rem] border-2 border-gray-100/50 p-2 shadow-sm">
-            <div className="bg-gray-50/30 rounded-[3rem] overflow-hidden border border-gray-100/30">
+          <div className="bg-white rounded-[3.5rem] border-2 border-gray-100/50 p-2 shadow-sm overflow-hidden">
+            <div className="bg-gray-50/30 rounded-[3rem] overflow-x-auto border border-gray-100/30 custom-scrollbar">
               <table className="w-full border-collapse">
                 <thead>
                   <tr className="bg-white/80 border-b border-gray-100">
                     {activeTab === "USERS" ? (
                       <>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Profile
                         </th>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Role
                         </th>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Activity
                         </th>
-                        <th className="px-10 py-7 text-right text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-right text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Ops
                         </th>
                       </>
                     ) : activeTab === "ROLES" ? (
                       <>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Role Name
                         </th>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Permissions
                         </th>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Scope
                         </th>
-                        <th className="px-10 py-7 text-right text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-right text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Ops
                         </th>
                       </>
                     ) : (
                         <>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Capability
                         </th>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Resource Code
                         </th>
-                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-left text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Domain
                         </th>
-                        <th className="px-10 py-7 text-right text-[11px] font-black text-gray-400 uppercase tracking-[0.25em]">
+                        <th className="px-10 py-7 text-right text-[11px] font-black text-gray-400 uppercase tracking-[0.25em] whitespace-nowrap">
                           Ops
                         </th>
                       </>
@@ -355,7 +356,7 @@ export default function UsersPage() {
                             >
                               <td className="px-10 py-7">
                                 <div className="flex items-center gap-5">
-                                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-white flex items-center justify-center border-2 border-white shadow-xl group-hover:rotate-3 transition-transform overflow-hidden">
+                                  <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-blue-50 to-white flex items-center justify-center border-2 border-white shadow-xl group-hover:rotate-3 transition-transform overflow-hidden shrink-0">
                                     {user.image ? (
                                       <img
                                         src={user.image}
@@ -369,7 +370,7 @@ export default function UsersPage() {
                                       />
                                     )}
                                   </div>
-                                  <div>
+                                  <div className="whitespace-nowrap">
                                     <h5 className="font-black text-gray-900 text-[15px]">
                                       {user.name}
                                     </h5>
@@ -457,10 +458,10 @@ export default function UsersPage() {
                             >
                               <td className="px-10 py-7">
                                 <div className="flex items-center gap-5">
-                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow-sm ${role.isSystem ? "bg-amber-50 text-amber-400" : "bg-orange-50 text-orange-400"}`}>
-                                    <Key size={20} />
+                                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow-sm shrink-0 ${role.isSystem ? "bg-amber-50 text-amber-400" : "bg-orange-50 text-orange-400"}`}>
+                                    <Key size={20} className="shrink-0" />
                                   </div>
-                                  <div>
+                                  <div className="whitespace-nowrap">
                                     <h5 className="font-black text-gray-900 text-[15px]">
                                       {role.name}
                                     </h5>
@@ -572,10 +573,10 @@ export default function UsersPage() {
                                 >
                                   <td className="px-10 py-7">
                                     <div className="flex items-center gap-5">
-                                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow-lg rotate-3 group-hover:rotate-0 transition-transform ${catStyle.split(' ')[0].replace('text', 'bg').replace('600', '500')} text-white`}>
-                                        {getIcon()}
+                                      <div className={`w-12 h-12 rounded-xl flex items-center justify-center border-2 border-white shadow-lg rotate-3 group-hover:rotate-0 transition-transform shrink-0 ${catStyle.split(' ')[0].replace('text', 'bg').replace('600', '500')} text-white`}>
+                                        <div className="shrink-0">{getIcon()}</div>
                                       </div>
-                                      <div>
+                                      <div className="whitespace-nowrap">
                                         <h5 className="font-black text-gray-900 text-[14px]">
                                           {perm.name}
                                         </h5>
@@ -719,10 +720,12 @@ export default function UsersPage() {
         showCloseButton={false}
         className="w-full md:w-[90vw] lg:w-[85vw] xl:max-w-6xl"
       >
-        <IdentityMatrix
-          user={editingUser}
-          onClose={() => setIsUserModalOpen(false)}
-        />
+        <ErrorBoundary fallbackTitle="User Management error" fallbackDescription="The staff records engine encountered a critical state error.">
+          <IdentityMatrix
+            user={editingUser}
+            onClose={() => setIsUserModalOpen(false)}
+          />
+        </ErrorBoundary>
       </Modal>
 
       <Modal
@@ -733,10 +736,12 @@ export default function UsersPage() {
         showCloseButton={false}
         className="w-full md:w-[90vw] lg:w-[85vw] xl:max-w-6xl"
       >
-        <AddRoleModal
-          role={editingRole}
-          onClose={() => setIsRoleModalOpen(false)}
-        />
+        <ErrorBoundary fallbackTitle="Authorization Failure" fallbackDescription="The role management system failed to stabilize.">
+          <AddRoleModal
+            role={editingRole}
+            onClose={() => setIsRoleModalOpen(false)}
+          />
+        </ErrorBoundary>
       </Modal>
 
       <Modal
@@ -747,10 +752,12 @@ export default function UsersPage() {
         showCloseButton={false}
         className="w-full md:w-[90vw] lg:w-[85vw] xl:max-w-4xl"
       >
-        <AddPermissionModal
-          permission={editingPermission}
-          onClose={() => setIsPermissionModalOpen(false)}
-        />
+        <ErrorBoundary fallbackTitle="Capability Anomaly" fallbackDescription="The permission registry encountered a synchronization error.">
+          <AddPermissionModal
+            permission={editingPermission}
+            onClose={() => setIsPermissionModalOpen(false)}
+          />
+        </ErrorBoundary>
       </Modal>
     </div>
   );

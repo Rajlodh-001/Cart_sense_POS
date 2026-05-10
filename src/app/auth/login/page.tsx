@@ -11,6 +11,7 @@ import {
   Store,
   LogIn,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { useLogin, useSessionStatus, useActivateStore } from "@/hooks/useAuth";
 
@@ -73,9 +74,11 @@ export default function POSLogin() {
   };
 
   // Login Handler
-  const handleLogin = (e?: React.FormEvent) => {
+  const handleLogin = (e?: React.FormEvent, overridePin?: string) => {
     if (e) e.preventDefault();
     loginMutation.reset(); 
+
+    const finalPin = overridePin || pin;
 
     if (activeTab === "password" && email && password && sessionStatus?.locationId) {
       loginMutation.mutate({ 
@@ -83,22 +86,39 @@ export default function POSLogin() {
         email, 
         password 
       });
-    } else if (activeTab === "pin" && pin.length >= 4 && sessionStatus?.locationId) {
+    } else if (activeTab === "pin" && finalPin.length >= 4 && sessionStatus?.locationId) {
       // PIN Login for Cashiers (No email needed)
       loginMutation.mutate({
         locationId: sessionStatus.locationId,
-        pin,
+        pin: finalPin,
       });
     }
   };
 
   // PIN Pad Logic
   const handlePinClick = (num: string) => {
-    if (pin.length < 6) {
-      setPin((prev) => prev + num);
-      loginMutation.reset();
+    loginMutation.reset();
+    
+    // If we already have 4 digits (e.g. after an error), start over
+    const currentPin = pin.length >= 4 ? "" : pin;
+    const nextPin = currentPin + num;
+    
+    setPin(nextPin);
+    
+    if (nextPin.length === 4) {
+      handleLogin(undefined, nextPin);
     }
   };
+
+  // Auto-clear PIN on error after a brief delay to show the "wrong" state
+  useEffect(() => {
+    if (loginMutation.isError && activeTab === "pin") {
+      const timer = setTimeout(() => {
+        setPin("");
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [loginMutation.isError, activeTab]);
 
   const handleBackspace = () => {
     setPin((prev) => prev.slice(0, -1));
@@ -247,12 +267,14 @@ export default function POSLogin() {
               {activeTab === "pin" ? (
                 <div className="flex flex-col items-center">
                   {/* PIN Dots Display */}
-                  <div className="flex gap-4 mb-8 h-8 items-center justify-center">
+                  <div className={`flex gap-4 mb-8 h-8 items-center justify-center ${loginMutation.isError ? "animate-shake" : ""}`}>
                     {[...Array(4)].map((_, i) => (
                       <div
                         key={i}
                         className={`w-4 h-4 rounded-full transition-all duration-200 ${
-                          i < pin.length ? "bg-blue-600 scale-110" : "bg-slate-200"
+                          i < pin.length 
+                            ? loginMutation.isError ? "bg-red-500 scale-110 shadow-[0_0_10px_rgba(239,68,68,0.4)]" : "bg-blue-600 scale-110" 
+                            : "bg-slate-200"
                         }`}
                       />
                     ))}
@@ -283,20 +305,23 @@ export default function POSLogin() {
                       <Delete className="w-6 h-6" />
                     </button>
                   </div>
+                  {/* Login Button - Only showing loader during auto-PIN sync in PIN tab */}
+                  {loginMutation.isPending && (
+                    <button
+                      disabled={true}
+                      className="mt-8 w-full max-w-[280px] bg-blue-600/50 text-white py-3 rounded-xl font-medium transition-all flex items-center justify-center gap-2"
+                    >
+                      <Loader2 className="w-4 h-4 animate-spin" /> Verifying...
+                    </button>
+                  )}
 
-                  <button
-                    onClick={() => handleLogin()}
-                    disabled={pin.length === 0 || loginMutation.isPending}
-                    className="mt-8 w-full max-w-[280px] bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-xl font-medium transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {loginMutation.isPending ? (
-                      "Verifying..."
-                    ) : (
-                      <>
-                        Login to Terminal <ChevronRight className="w-4 h-4" />
-                      </>
-                    )}
-                  </button>
+                  {!loginMutation.isPending && (
+                    <div className="mt-8 h-[52px] flex items-center justify-center">
+                       <p className="text-[10px] font-black text-slate-300 uppercase tracking-[0.2em] animate-pulse">
+                          Auto-Verifying Matrix
+                       </p>
+                    </div>
+                  )}
                 </div>
               ) : (
                 /* Password Interface */

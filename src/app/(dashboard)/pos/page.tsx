@@ -5,19 +5,21 @@ import { useRouter } from "next/navigation";
 import { useSessionStatus } from "@/hooks/useAuth";
 import ItemsContainer from "@/components/pos/ItemsContainer";
 import OrderContainer from "@/components/pos/OrderContainer";
+import ConnectionError from "@/components/shared/ConnectionError";
 import { Loader2 } from "lucide-react";
 
 const PosPage = () => {
   const router = useRouter();
-  const { data: session, isLoading } = useSessionStatus();
+  const { data: session, isLoading, isError } = useSessionStatus();
 
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && !isError) {
       if (!session?.isActivated || !session?.isLoggedIn) {
-        router.replace("/auth/login");
+        const currentPath = window.location.pathname + window.location.search;
+        router.replace(`/auth/login?next=${encodeURIComponent(currentPath)}`);
       }
     }
-  }, [session, isLoading, router]);
+  }, [session, isLoading, isError, router]);
 
   if (isLoading) {
     return (
@@ -26,6 +28,10 @@ const PosPage = () => {
         <p className="text-gray-500 font-medium">Verifying session...</p>
       </div>
     );
+  }
+
+  if (isError) {
+    return <ConnectionError entityName="your session" />;
   }
 
   if (!session?.isLoggedIn) return null;

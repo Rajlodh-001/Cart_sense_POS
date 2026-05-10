@@ -10,6 +10,7 @@ import AddProductModal from "@/components/admin/inventory/AddProductModal";
 import AddCategoryModal from "@/components/admin/inventory/AddCategoryModal";
 import AddModifierModal from "@/components/admin/inventory/AddModifierModal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import toast from "react-hot-toast";
 
 type TabId = "products" | "categories" | "modifiers";
@@ -289,10 +290,12 @@ export default function InventoryPage() {
         showCloseButton={false}
         className="w-full md:w-3/4 lg:w-[85%] xl:max-w-6xl"
       >
-        <AddProductModal 
-          product={editingProduct}
-          onClose={() => { setIsProductModalOpen(false); setEditingProduct(null); }} 
-        />
+        <ErrorBoundary fallbackTitle="Catalog Failure" fallbackDescription="The product entry matrix failed to load properly.">
+          <AddProductModal 
+            product={editingProduct}
+            onClose={() => { setIsProductModalOpen(false); setEditingProduct(null); }} 
+          />
+        </ErrorBoundary>
       </Modal>
 
       <Modal 
@@ -303,10 +306,12 @@ export default function InventoryPage() {
         showCloseButton={false}
         className="w-full md:w-3/4 lg:w-[85%] xl:max-w-4xl"
       >
-        <AddCategoryModal 
-          category={editingCategory}
-          onClose={() => { setIsCategoryModalOpen(false); setEditingCategory(null); }} 
-        />
+        <ErrorBoundary fallbackTitle="Division Failure" fallbackDescription="The category classification engine encountered a state error.">
+          <AddCategoryModal 
+            category={editingCategory}
+            onClose={() => { setIsCategoryModalOpen(false); setEditingCategory(null); }} 
+          />
+        </ErrorBoundary>
       </Modal>
 
       <Modal 
@@ -317,10 +322,12 @@ export default function InventoryPage() {
         showCloseButton={false}
         className="w-full md:w-3/4 lg:w-[85%] xl:max-w-4xl"
       >
-        <AddModifierModal 
-          modifier={editingModifier}
-          onClose={() => { setIsModifierModalOpen(false); setEditingModifier(null); }} 
-        />
+        <ErrorBoundary fallbackTitle="Customization Failure" fallbackDescription="The product modifier matrix failed to synchronize.">
+          <AddModifierModal 
+            modifier={editingModifier}
+            onClose={() => { setIsModifierModalOpen(false); setEditingModifier(null); }} 
+          />
+        </ErrorBoundary>
       </Modal>
 
       <ConfirmModal 

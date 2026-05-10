@@ -34,7 +34,10 @@ import {
 import CustomDropdown from "@/components/shared/CustomDropdown";
 import Modal from "@/components/shared/Modal";
 import CreateCustomerModal from "./CreateCustomerModal";
-import { useLocationSettings, useOrganizationSettings } from "@/hooks/useSettings";
+import {
+  useLocationSettings,
+  useOrganizationSettings,
+} from "@/hooks/useSettings";
 import ItemDetailModal from "./ItemDetailModal";
 import PaymentModal from "@/components/activity/PaymentModal";
 import toast from "react-hot-toast";
@@ -102,15 +105,13 @@ const OrderContainer = () => {
 
   // Implement Location/Global Tax Architecture
   const taxRate = Number(locationSettings?.taxRate || 0);
-  const isTaxInclusive = orgSettings?.taxType === 'INCLUSIVE';
-  
-  const tax = isTaxInclusive 
-    ? taxableAmount - (taxableAmount / (1 + taxRate / 100))
+  const isTaxInclusive = orgSettings?.taxType === "INCLUSIVE";
+
+  const tax = isTaxInclusive
+    ? taxableAmount - taxableAmount / (1 + taxRate / 100)
     : taxableAmount * (taxRate / 100);
 
-  const finalTotal = isTaxInclusive 
-    ? taxableAmount 
-    : taxableAmount + tax;
+  const finalTotal = isTaxInclusive ? taxableAmount : taxableAmount + tax;
 
   // Auto-select first table if Dine-In is selected and no table is set
   useEffect(() => {
@@ -159,6 +160,7 @@ const OrderContainer = () => {
       const payload: CreateOrderPayload = {
         orderNo: Math.floor(Math.random() * 10000), // temp fallback structure
         userId: user.id,
+        deviceId: user.deviceId || undefined,
         customerId: details.customerId || undefined,
         tableId: details.tableId || orderInfo.tableId || undefined,
         seatCount: details.seatCount || undefined,
@@ -167,15 +169,22 @@ const OrderContainer = () => {
         type: dbTypeMap[details.orderType] || "DINE_IN",
         paymentMethod: details.paymentMethod,
         cashReceived: details.cashReceived,
+        changeReturned: details.changeReturned,
         notes: details.orderNote,
         discount: details.discount || discount,
         tax: Number(tax.toFixed(2)),
         coupon: details.coupon || orderInfo.coupon || undefined,
         items: cartItems.map((item) => {
-          const modifiersText = item.modifiers?.length
-            ? `Modifiers: ${item.modifiers.join(", ")}`
-            : "";
-          const combinedNote = [item.note, modifiersText]
+          const combinedNote = [
+            item.note
+              ? item.modifiers && item.modifiers.length > 0
+                ? `Notes: ${item.note}`
+                : item.note
+              : "",
+            item.modifiers?.length
+              ? `Modifiers: ${item.modifiers.join(", ")}`
+              : "",
+          ]
             .filter(Boolean)
             .join(" | ");
 
@@ -288,11 +297,14 @@ const OrderContainer = () => {
                     {(item.note ||
                       (item.modifiers && item.modifiers.length > 0)) && (
                       <p className="text-blue-400 text-[11px] mt-0.5 truncate max-w-[140px] italic">
-                        📝{" "}
                         {[
-                          item.note,
+                          item.note
+                            ? item.modifiers && item.modifiers.length > 0
+                              ? `Notes : ${item.note}`
+                              : item.note
+                            : "",
                           item.modifiers?.length
-                            ? `Mods: ${item.modifiers.join(", ")}`
+                            ? `Modifiers: ${item.modifiers.join(", ")}`
                             : "",
                         ]
                           .filter(Boolean)
@@ -387,7 +399,9 @@ const OrderContainer = () => {
                 type="text"
                 placeholder="Enter Promo"
                 value={orderInfo.coupon || ""}
-                onChange={(e) => dispatch(setCoupon(e.target.value.toUpperCase()))}
+                onChange={(e) =>
+                  dispatch(setCoupon(e.target.value.toUpperCase()))
+                }
                 onKeyDown={(e) => {
                   if (e.key === "Escape") setShowPromoInput(false);
                 }}
@@ -406,11 +420,17 @@ const OrderContainer = () => {
                         subTotal: totalPrice,
                       });
                       if (res.valid) {
-                        toast.success(`Discount ${res.discountAmount} applied!`, { id: "verify-coupon" });
+                        toast.success(
+                          `Discount ${res.discountAmount} applied!`,
+                          { id: "verify-coupon" },
+                        );
                         dispatch(setDiscountAmount(res.discountAmount));
                       }
                     } catch (err: any) {
-                      toast.error(err.response?.data?.message || "Invalid coupon", { id: "verify-coupon" });
+                      toast.error(
+                        err.response?.data?.message || "Invalid coupon",
+                        { id: "verify-coupon" },
+                      );
                       dispatch(setCoupon(null));
                       dispatch(setDiscountAmount(0));
                     }
@@ -454,7 +474,10 @@ const OrderContainer = () => {
         className="md:max-w-md w-full"
       >
         {selectedItem !== null && (
-          <ItemDetailModal itemId={selectedItem as number} onClose={closeModal} />
+          <ItemDetailModal
+            itemId={selectedItem as number}
+            onClose={closeModal}
+          />
         )}
       </Modal>
 

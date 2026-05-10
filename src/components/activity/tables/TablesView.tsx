@@ -6,10 +6,11 @@ import Portal from "../../shared/Portal";
 import { useTables, Table } from "@/hooks/useTables";
 import { useUpdateOrder } from "@/hooks/useOrders";
 import PaymentModal from "@/components/activity/PaymentModal";
+import ConnectionError from "@/components/shared/ConnectionError";
 import toast from "react-hot-toast";
 
 const TablesView = () => {
-  const { data: dbTables, isLoading } = useTables(true);
+  const { data: dbTables, isLoading, isError } = useTables(true);
   const tables: Table[] = dbTables || [];
 
   const [selectedTable, setSelectedTable] = useState<Table | null>(null);
@@ -180,6 +181,8 @@ const TablesView = () => {
         <div className="flex-1 flex items-center justify-center text-blue-400">
           Loading tables...
         </div>
+      ) : isError ? (
+        <ConnectionError entityName="tables" fullScreen={false} />
       ) : capacities.length > 0 ? (
         capacities.map((cap) => renderSection(cap))
       ) : (

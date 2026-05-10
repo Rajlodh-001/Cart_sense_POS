@@ -26,6 +26,7 @@ import { Product, useCreateProduct, useUpdateProduct } from "@/hooks/useProducts
 import { useCategories, useCreateCategory } from "@/hooks/useCategories";
 import { useModifiers } from "@/hooks/useModifiers";
 import { useQueryClient } from "@tanstack/react-query";
+import { FormInput, FormKeyValueEditor, FormLayout } from "@/components/shared/forms";
 
 interface AddProductModalProps {
   product?: Product | null; // If provided, we are editing
@@ -45,10 +46,25 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
 
   const [isAddingCategory, setIsAddingCategory] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
-  const [recipeRaw, setRecipeRaw] = useState("");
-  const [cookingRaw, setCookingRaw] = useState("");
+  const [recipe, setRecipe] = useState<Record<string, string>>({});
+  const [cookingDescription, setCookingDescription] = useState<Record<string, string>>({});
   const [selectedModifierIds, setSelectedModifierIds] = useState<string[]>([]);
   const [formData, setFormData] = useState({
+    name: "",
+    price: "",
+    skuId: "",
+    categoryId: "",
+    imageUrl: "",
+    isActive: true,
+    description: "",
+    additionalNotes: "",
+    discount: "0",
+    color: "",
+    size: "",
+    calories: "0",
+    protein: "0",
+    carbs: "0",
+    fat: "0",
     weight: "0",
     primaryColor: "",
     secondaryColor: "",
@@ -80,8 +96,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
         iconName: product.iconName || "",
         groupBy: product.groupBy || "",
       });
-      setRecipeRaw(product.recipe ? JSON.stringify(product.recipe, null, 2) : "{}");
-      setCookingRaw(product.cookingDescription ? JSON.stringify(product.cookingDescription, null, 2) : "{}");
+      setRecipe(product.recipe || {});
+      setCookingDescription(product.cookingDescription || {});
       if (product.modifiers) {
         setSelectedModifierIds(product.modifiers.map(m => m.id));
       }
@@ -140,8 +156,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
     );
   };
 
-
-
   const handleQuickAddCategory = async () => {
     if (!newCategoryName.trim()) return;
     try {
@@ -154,28 +168,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
     }
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    let recipeObj = null;
-    try {
-       if (recipeRaw.trim()) {
-          recipeObj = JSON.parse(recipeRaw);
-       }
-    } catch (e) {
-       alert("Invalid JSON for Recipe. Please check your syntax.");
-       return;
-    }
-
-    let cookingJson = null;
-    try {
-      if (cookingRaw.trim()) {
-        cookingJson = JSON.parse(cookingRaw);
-      }
-    } catch (e) {
-      alert("Invalid JSON for Cooking Instructions. Please check your syntax.");
-      return;
-    }
-
+  const handleSubmit = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
     const payload = {
       ...formData,
       price: parseFloat(formData.price),
@@ -185,8 +179,8 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
       carbs: parseFloat(formData.carbs),
       fat: parseFloat(formData.fat),
       weight: parseFloat(formData.weight),
-      recipe: recipeObj,
-      cookingDescription: cookingJson,
+      recipe: recipe,
+      cookingDescription: cookingDescription,
       modifierIds: selectedModifierIds,
     };
 
@@ -202,8 +196,6 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
     }
   };
 
-  const isPending = createMutation.isPending || updateMutation.isPending;
-
   const SectionHeader = ({ icon: Icon, title, subtitle }: { icon: any, title: string, subtitle: string }) => (
     <div className="flex items-center gap-4 mb-6 mt-4">
       <div className="w-10 h-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center">
@@ -217,39 +209,16 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
   );
 
   return (
-    <div className="relative theme-admin font-sans max-h-[90vh] flex flex-col">
-      {/* Header - Fixed */}
-      <div className="flex items-center justify-between p-10 pb-6 border-b border-gray-50 flex-shrink-0">
-        <div className="flex items-center gap-5">
-          <div 
-            className="w-16 h-16 rounded-[1.5rem] flex items-center justify-center text-white shadow-premium transition-colors duration-500"
-            style={{ 
-                backgroundColor: formData.primaryColor || '#111827',
-                boxShadow: formData.primaryColor ? `0 15px 30px ${formData.primaryColor}30` : '0 15px 40px rgba(0,0,0,0.1)'
-            }}
-          >
-            <LucideIcon name={formData.iconName || 'Package'} size={24} />
-          </div>
-          <div>
-            <h3 className="text-2xl font-black text-gray-900 tracking-tight">
-              {isEditing ? "Edit Product" : "New Product"}
-            </h3>
-            <p className="text-[10px] text-gray-400 font-black uppercase tracking-[0.2em] leading-none mt-2">
-              Store Catalog System
-            </p>
-          </div>
-        </div>
-        <button
-          onClick={onClose}
-          className="w-12 h-12 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all border border-gray-100 shadow-sm"
-        >
-          <X size={20} />
-        </button>
-      </div>
-
-      {/* Form Context - Scrollable */}
-      <form onSubmit={handleSubmit} className="flex-1 overflow-y-auto p-10 py-6 custom-scrollbar space-y-12">
-        
+    <FormLayout
+      title={isEditing ? "Edit Product" : "New Product"}
+      subtitle="Store Catalog System"
+      iconName={formData.iconName || "Package"}
+      primaryColor={formData.primaryColor || "#111827"}
+      onClose={onClose}
+      onSubmit={handleSubmit}
+      isPending={createMutation.isPending || updateMutation.isPending}
+      submitLabel={isEditing ? "Save Changes" : "Add to Catalog"}
+    >
         {/* TOP SECTION: IMAGE & PRIMARY DETAILS */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
           {/* Left: Huge Image Preview */}
@@ -392,6 +361,16 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
                   onChange={(e) => setFormData({ ...formData, skuId: e.target.value })}
                   className="w-full px-8 py-4 bg-white border border-gray-100 rounded-full font-bold focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all text-gray-900 outline-none shadow-sm"
                   placeholder="e.g. LAT-001"
+                 />
+             </div>
+
+             <div className="space-y-2">
+                <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 leading-none">Additional Notes (Optional)</label>
+                <textarea
+                  value={formData.additionalNotes}
+                  onChange={(e) => setFormData({ ...formData, additionalNotes: e.target.value })}
+                  className="w-full px-8 py-4 bg-white border border-gray-100 rounded-[2rem] font-medium text-sm focus:border-primary focus:ring-8 focus:ring-primary/5 transition-all text-gray-900 outline-none shadow-sm min-h-[100px] resize-none"
+                  placeholder="Extra instructions or backend references..."
                 />
              </div>
           </div>
@@ -537,40 +516,34 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
             </div>
 
             <div className="space-y-10 mt-4">
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 flex items-center gap-2">
-                  <FileText size={10} /> Structured Recipe (JSON)
+                  <FileText size={10} /> Structured Recipe
                 </label>
-                <div className="relative group/json">
-                  <textarea
-                    value={recipeRaw}
-                    onChange={(e) => setRecipeRaw(e.target.value)}
-                    rows={8}
-                    className="w-full px-8 py-5 bg-gray-900 text-green-400 font-mono text-xs rounded-[2.5rem] border border-gray-800 focus:border-green-500 transition-all outline-none shadow-premium resize-none custom-scrollbar"
-                    placeholder='{ "ingredients": [...] }'
-                  />
-                  <div className="absolute top-6 right-8 text-[8px] font-black text-gray-600 uppercase tracking-widest pointer-events-none">Recipe Database</div>
-                </div>
+                <FormKeyValueEditor 
+                  data={recipe} 
+                  onChange={setRecipe} 
+                  placeholderKey="Ingredient"
+                  placeholderValue="Quantity"
+                  accentColor="green"
+                />
               </div>
 
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <label className="text-[10px] font-black text-gray-400 uppercase tracking-widest ml-4 flex items-center gap-2">
-                  <Flame size={10} /> Cooking Instructions (JSON)
+                  <Flame size={10} /> Cooking Instructions
                 </label>
-                <div className="relative group/json">
-                  <textarea
-                    value={cookingRaw}
-                    onChange={(e) => setCookingRaw(e.target.value)}
-                    rows={8}
-                    className="w-full px-8 py-5 bg-gray-900 text-orange-400 font-mono text-xs rounded-[2.5rem] border border-gray-800 focus:border-orange-500 transition-all outline-none shadow-premium resize-none custom-scrollbar"
-                    placeholder='{ "steps": [...] }'
-                  />
-                  <div className="absolute top-6 right-8 text-[8px] font-black text-gray-600 uppercase tracking-widest pointer-events-none">Kitchen Execution</div>
-                </div>
+                <FormKeyValueEditor 
+                  data={cookingDescription} 
+                  onChange={setCookingDescription} 
+                  placeholderKey="Step Name"
+                  placeholderValue="Action"
+                  accentColor="orange"
+                />
               </div>
 
               <p className="px-8 text-[10px] leading-relaxed text-gray-400 font-medium italic">
-                * Input valid JSON code for precise kitchen execution and ingredient tracking.
+                * Use the Add button to include ingredients and cooking steps as key-value pairs.
               </p>
             </div>
           </div>
@@ -637,32 +610,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({ product, onClose }) =
             </div>
           </div>
         </div>
-      </form>
-
-      {/* Footer Actions - Fixed */}
-      <div className="p-10 border-top border-gray-50 bg-white/80 backdrop-blur-sm rounded-b-[3rem] flex gap-4 flex-shrink-0">
-        <button
-          type="button"
-          onClick={onClose}
-          className="flex-1 py-5 font-black text-[12px] uppercase tracking-widest text-gray-400 hover:text-gray-600 hover:bg-gray-50 transition-all rounded-full border border-transparent hover:border-gray-100"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          onClick={handleSubmit}
-          disabled={isPending}
-          className="flex-[2] py-5 bg-primary text-white font-black text-[12px] uppercase tracking-widest rounded-full shadow-2xl shadow-primary/20 hover:bg-primary/95 transition-all flex items-center justify-center gap-3 group disabled:opacity-50 active:scale-[0.98]"
-        >
-          {isPending ? (
-            <Loader2 size={18} className="animate-spin" />
-          ) : (
-            <Check size={18} className="group-hover:scale-110 transition-transform" strokeWidth={3} />
-          )}
-          <span>{isEditing ? "Save Changes" : "Add to Catalog"}</span>
-        </button>
-      </div>
-    </div>
+    </FormLayout>
   );
 };
 

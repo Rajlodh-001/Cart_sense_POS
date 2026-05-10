@@ -34,7 +34,8 @@ axiosInstance.interceptors.response.use(
       if (typeof window !== "undefined") {
         localStorage.removeItem("pos_token");
         if (!window.location.pathname.includes("/auth/login")) {
-          window.location.href = "/auth/login";
+          const currentPath = window.location.pathname + window.location.search;
+          window.location.href = `/auth/login?next=${encodeURIComponent(currentPath)}`;
         }
       }
     }
