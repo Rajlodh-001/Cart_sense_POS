@@ -1,28 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Building2,
   Lock,
   Mail,
-  Phone,
   MapPin,
   Clock,
   Zap,
   Fingerprint,
-  CheckCircle2,
-  XCircle,
   User as UserIcon,
   ShieldCheck,
   Palette,
+  Activity,
+  ShieldAlert,
+  CheckCircle2,
+  Layers,
 } from "lucide-react";
 import LucideIcon from "@/components/shared/LucideIcon";
 import { 
   FormInput, 
-  FormSelect, 
   FormMultiSelect, 
   FormToggle, 
   FormImage, 
   FormSection, 
   FormSearchSelect,
+  FormCreatableSelect,
 } from "@/components/shared/forms";
 import { FormLayout } from "@/components/shared/forms/FormLayout";
 import FormPhone from "@/components/shared/forms/FormPhone";
@@ -32,6 +33,7 @@ import {
   User,
   useAllLocations,
   useRoles,
+  useUserGroups,
 } from "@/hooks/useUsers";
 import toast from "react-hot-toast";
 
@@ -80,20 +82,20 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
   const updateUser = useUpdateUser();
   const { data: locations } = useAllLocations();
   const { data: roles } = useRoles();
+  const { data: userGroups } = useUserGroups();
 
   const [formData, setFormData] = useState({
     name: user?.name || "",
     email: user?.email || "",
-    roleId:
-      typeof user?.role === "string" ? user.role : user?.roleData?.id || "",
+    roleId: user?.roleId || (typeof user?.role === "string" ? "" : user?.roleData?.id || ""),
     isActive: user?.isActive ?? true,
     phone: user?.phone || "",
     address: user?.address || "",
-    locationId: "",
-    accessibleLocations: user?.accessibleLocationIds || [],
+    locationId: user?.locationId || "",
+    accessibleLocationIds: user?.accessibleLocationIds || [],
     password: "",
     pin: user?.pin || "",
-    imageUrl: user?.imageUrl || "",
+    imageUrl: user?.imageUrl || user?.image || "",
     icon: user?.icon || "",
     primaryColor: user?.primaryColor || "",
     secondaryColor: user?.secondaryColor || "",
@@ -101,23 +103,54 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
     groupBy: user?.groupBy || "",
   });
 
+  // Sync state if user changes (e.g. switching between users in modal)
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        name: user.name || "",
+        email: user.email || "",
+        roleId: user.roleId || (typeof user.role === "string" ? "" : user.roleData?.id || ""),
+        isActive: user.isActive ?? true,
+        phone: user.phone || "",
+        address: user.address || "",
+        locationId: user.locationId || "",
+        accessibleLocationIds: user.accessibleLocationIds || [],
+        password: "",
+        pin: user.pin || "",
+        imageUrl: user.imageUrl || user.image || "",
+        icon: user.icon || "",
+        primaryColor: user.primaryColor || "",
+        secondaryColor: user.secondaryColor || "",
+        iconName: user.iconName || "",
+        groupBy: user.groupBy || "",
+      });
+    }
+  }, [user]);
+
   const handleSubmit = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
+    
+    // Clean data before sending
+    const payload = { ...formData };
+    if (isEditing && !payload.password) {
+      delete (payload as any).password;
+    }
+
     try {
       if (isEditing) {
         await toast.promise(
-          updateUser.mutateAsync({ id: user!.id, data: formData }),
+          updateUser.mutateAsync({ id: user!.id, data: payload }),
           {
-            loading: "Updating user...",
-            success: "User updated successfully",
+            loading: "Updating identity...",
+            success: "Identity synchronized",
             error: "Update failed",
           },
         );
       } else {
-        await toast.promise(createUser.mutateAsync(formData), {
-          loading: "Creating user...",
-          success: "User created successfully",
-          error: "Creation failed",
+        await toast.promise(createUser.mutateAsync(payload), {
+          loading: "Deploying identity...",
+          success: "Identity deployed to hub",
+          error: "Deployment failed",
         });
       }
       onClose();
@@ -126,32 +159,39 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
 
   return (
     <FormLayout
-      title={isEditing ? "Edit User" : "Add User"}
+      title={isEditing ? "Edit Identity" : "Deploy Identity"}
       subtitle="Identity Matrix"
       iconName={formData.iconName || "User"}
       primaryColor={formData.primaryColor || "#111827"}
       onClose={onClose}
       onSubmit={handleSubmit}
       isPending={createUser.isPending || updateUser.isPending}
-      submitLabel={isEditing ? "Update Identity" : "Deploy Identity"}
+      submitLabel={isEditing ? "Update Matrix" : "Deploy Matrix"}
     >
         {/* 🛡️ MASTER GRID STABILIZER: 12-Column Split */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 w-full items-start">
-          {/* 📍 LEFT PLANE: VISUAL IDENTITY */}
-          <div className="lg:col-span-4 flex flex-col gap-6 lg:gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 w-full items-start">
+          
+          {/* 📍 LEFT PLANE: VISUAL IDENTITY & STATUS */}
+          <div className="lg:col-span-4 flex flex-col gap-10">
             <FormImage
-              label="Profile Photo"
+              label="Visual Identifier"
               value={formData.imageUrl}
               onChange={(val) => setFormData({ ...formData, imageUrl: val })}
-              description="Visual ID for receipts and staff directory."
+              description="Profile photo for staff directory and receipts."
             />
 
-            <div className="p-8 rounded-[2.5rem] bg-white border border-gray-100 shadow-sm relative overflow-hidden group/status">
-              <div className={`absolute top-0 left-0 w-1.5 h-full transition-colors duration-500 ${formData.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
-              <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-widest mb-4">
-                Operational Status
-              </h5>
-              <div className="flex items-center justify-between">
+            <div className="p-10 rounded-[3rem] bg-white border border-gray-100 shadow-sm relative overflow-hidden group/status transition-all hover:shadow-xl hover:shadow-gray-100/50">
+              <div className={`absolute top-0 left-0 w-2 h-full transition-colors duration-500 ${formData.isActive ? "bg-emerald-500" : "bg-red-500"}`} />
+              <div className="flex items-center justify-between mb-8">
+                <h5 className="text-[10px] font-black text-gray-400 uppercase tracking-[0.3em]">
+                  Security Status
+                </h5>
+                <div className={`p-3 rounded-2xl ${formData.isActive ? "bg-emerald-50 text-emerald-500" : "bg-red-50 text-red-500"}`}>
+                   <LucideIcon name={formData.isActive ? "Activity" : "ShieldAlert"} size={20} strokeWidth={2.5} />
+                </div>
+              </div>
+              
+              <div className="flex flex-col gap-6">
                 <div className="flex items-center gap-4">
                   <div
                     className={`w-3 h-3 rounded-full animate-pulse ${formData.isActive ? "bg-emerald-500 shadow-[0_0_12px_rgba(16,185,129,0.4)]" : "bg-red-500 shadow-[0_0_12px_rgba(239,68,68,0.4)]"}`}
@@ -162,30 +202,80 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                     {formData.isActive ? "Active Account" : "Disabled Account"}
                   </span>
                 </div>
-                <div className={`p-3 rounded-2xl ${formData.isActive ? "bg-emerald-50 text-emerald-500" : "bg-red-50 text-red-500"}`}>
-                   <LucideIcon name={formData.isActive ? "Activity" : "ShieldAlert"} size={18} />
-                </div>
+                
+                <FormToggle
+                  label="Authorize Access"
+                  icon={ShieldCheck}
+                  checked={formData.isActive}
+                  onChange={(val) =>
+                    setFormData({ ...formData, isActive: val })
+                  }
+                />
               </div>
             </div>
+
+            <FormSection
+              icon={Palette}
+              title="Branding"
+              subtitle="UI Theming"
+            >
+              <div className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
+                   <FormInput
+                    label="Primary"
+                    value={formData.primaryColor}
+                    onChange={(e) =>
+                      setFormData({ ...formData, primaryColor: e.target.value })
+                    }
+                    placeholder="#HEX"
+                  />
+                  <FormInput
+                    label="Secondary"
+                    value={formData.secondaryColor}
+                    onChange={(e) =>
+                      setFormData({ ...formData, secondaryColor: e.target.value })
+                    }
+                    placeholder="#HEX"
+                  />
+                </div>
+                <FormInput
+                  label="Lucide Icon"
+                  value={formData.iconName}
+                  onChange={(e) =>
+                    setFormData({ ...formData, iconName: e.target.value })
+                  }
+                  placeholder="e.g. Shield, Zap"
+                />
+                <FormCreatableSelect
+                  label="Staff Category"
+                  icon={Layers}
+                  value={formData.groupBy}
+                  onChange={(val) =>
+                    setFormData({ ...formData, groupBy: val })
+                  }
+                  options={userGroups?.map((g) => ({ value: g, label: g })) || []}
+                  placeholder="Management, Kitchen, etc."
+                />
+              </div>
+            </FormSection>
           </div>
 
           {/* ⚡ RIGHT PLANE: CORE DATA */}
-          <div className="lg:col-span-8 flex flex-col gap-10">
+          <div className="lg:col-span-8 flex flex-col gap-12">
             <FormSection
               icon={UserIcon}
-              title="User Profile"
+              title="Identity Profile"
               subtitle="Basic Account Information"
             >
               <div className="space-y-8">
                 <FormInput
-                  label="Full Name"
+                  label="Full Legal Name"
                   required
                   value={formData.name}
                   onChange={(e) =>
                     setFormData({ ...formData, name: e.target.value })
                   }
                   placeholder="e.g. Michael Scott"
-                  className="py-4 px-6"
                 />
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -198,10 +288,9 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                       setFormData({ ...formData, email: e.target.value })
                     }
                     placeholder="name@example.com"
-                    className="py-4 px-6"
                   />
                   <FormSearchSelect
-                    label="User Role"
+                    label="Assigned Role"
                     icon={ShieldCheck}
                     required
                     value={formData.roleId}
@@ -214,32 +303,49 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                     placeholder="Select role..."
                   />
                 </div>
-
-                <FormToggle
-                  label="Active Status"
-                  icon={Zap}
-                  checked={formData.isActive}
-                  onChange={(val) =>
-                    setFormData({ ...formData, isActive: val })
-                  }
-                />
               </div>
             </FormSection>
 
             <FormSection
               icon={Building2}
-              title="Location Access"
-              subtitle="Manage branch permissions"
+              title="Store Distribution"
+              subtitle="Manage operational boundaries"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
                 <FormPhone
-                  label="Phone Number"
+                  label="Contact Number"
                   value={formData.phone}
                   onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
                     setFormData({ ...formData, phone: e.target.value })
                   }
-                  description="Primary contact for staff."
+                  description="Primary mobile for staff alerts."
                 />
+                <FormSearchSelect
+                  label="Primary Branch"
+                  icon={MapPin}
+                  value={formData.locationId}
+                  onChange={(val) =>
+                    setFormData({ ...formData, locationId: val })
+                  }
+                  options={
+                    locations?.map((l) => ({ value: l.id, label: l.name })) || []
+                  }
+                  placeholder="Select home branch..."
+                />
+              </div>
+              <FormMultiSelect
+                label="Accessible Branches"
+                icon={Building2}
+                placeholder="Authorize multiple locations..."
+                options={
+                  locations?.map((l) => ({ value: l.id, label: l.name })) || []
+                }
+                value={formData.accessibleLocationIds}
+                onChange={(val) =>
+                  setFormData({ ...formData, accessibleLocationIds: val })
+                }
+              />
+              <div className="mt-8">
                 <FormInput
                   label="Physical Address"
                   icon={MapPin}
@@ -247,35 +353,22 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, address: e.target.value })
                   }
-                  placeholder="e.g. 123 Main St"
-                  className="py-4 px-6"
+                  placeholder="e.g. 1725 Slough Avenue, Scranton, PA"
                 />
               </div>
-              <FormMultiSelect
-                label="Accessible Locations"
-                icon={Building2}
-                placeholder="Search locations..."
-                options={
-                  locations?.map((l) => ({ value: l.id, label: l.name })) || []
-                }
-                value={formData.accessibleLocations}
-                onChange={(val) =>
-                  setFormData({ ...formData, accessibleLocations: val })
-                }
-              />
             </FormSection>
 
             <FormSection
               icon={Lock}
-              title="Security"
-              subtitle="Login credentials"
+              title="Security Authorization"
+              subtitle="Login & Terminal Credentials"
             >
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 <FormInput
                   label={
                     isEditing
-                      ? "Change Password"
-                      : "Password"
+                      ? "Reset Password"
+                      : "Hub Password"
                   }
                   type="password"
                   required={!isEditing}
@@ -284,7 +377,6 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                     setFormData({ ...formData, password: e.target.value })
                   }
                   placeholder="••••••••"
-                  className="py-4 px-6"
                 />
                 <FormInput
                   label="Terminal PIN"
@@ -299,85 +391,27 @@ export const IdentityMatrix: React.FC<IdentityMatrixProps> = ({
                     })
                   }
                   placeholder="4-digit PIN"
-                  className="py-4 px-6"
-                />
-              </div>
-            </FormSection>
-
-            <FormSection
-              icon={Zap}
-              title="Visual Identity"
-              subtitle="Theming & Categorization"
-            >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <FormInput
-                  label="Primary Color"
-                  value={formData.primaryColor}
-                  onChange={(e) =>
-                    setFormData({ ...formData, primaryColor: e.target.value })
-                  }
-                  placeholder="e.g. #3b82f6"
-                  className="py-4 px-6"
-                />
-                <FormInput
-                  label="Secondary Color"
-                  value={formData.secondaryColor}
-                  onChange={(e) =>
-                    setFormData({ ...formData, secondaryColor: e.target.value })
-                  }
-                  placeholder="e.g. #eff6ff"
-                  className="py-4 px-6"
-                />
-              </div>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-8">
-                <FormInput
-                  label="Lucide Icon"
-                  value={formData.iconName}
-                  onChange={(e) =>
-                    setFormData({ ...formData, iconName: e.target.value })
-                  }
-                  placeholder="e.g. Shield, Zap"
-                  className="py-4 px-6"
-                />
-                <FormInput
-                  label="Alt Icon / Simple"
-                  value={formData.icon}
-                  onChange={(e) =>
-                    setFormData({ ...formData, icon: e.target.value })
-                  }
-                  placeholder="e.g. coffee, star"
-                  className="py-4 px-6"
-                />
-              </div>
-              <div className="mt-8">
-                <FormInput
-                  label="Group By / Category"
-                  value={formData.groupBy}
-                  onChange={(e) =>
-                    setFormData({ ...formData, groupBy: e.target.value })
-                  }
-                  placeholder="e.g. Management Team"
-                  className="py-4 px-6"
                 />
               </div>
             </FormSection>
 
             <GhostedSection
-              title="User Details"
+              title="Registry Metadata"
               data={[
                 {
                   label: "Created At",
                   value: user?.createdAt
                     ? new Date(user.createdAt).toLocaleDateString()
-                    : "N/A",
+                    : "NEW RECORD",
                 },
                 {
-                  label: "Last Login",
+                  label: "Last Hub Login",
                   value: user?.lastLogin
-                    ? new Date(user.lastLogin).toLocaleDateString()
-                    : "Never",
+                    ? new Date(user.lastLogin).toLocaleString()
+                    : "NEVER",
                 },
-                { label: "Account Status", value: "STABLE" },
+                { label: "Matrix Status", value: user?.isActive ? "VERIFIED" : "LOCKED" },
+                { label: "Sync Priority", value: "HIGH" },
               ]}
             />
           </div>

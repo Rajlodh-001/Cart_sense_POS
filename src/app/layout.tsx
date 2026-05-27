@@ -7,6 +7,7 @@ import "@fortawesome/fontawesome-svg-core/styles.css";
 import { StoreProvider } from "@/store/StoreProvider";
 import QueryProvider from "@/providers/QueryProvider";
 import AuthProvider from "@/providers/AuthProvider";
+import IdleLockProvider from "@/providers/IdleLockProvider";
 import { Toaster } from "react-hot-toast";
 
 config.autoAddCss = false;
@@ -32,8 +33,10 @@ export default function RootLayout({
         <StoreProvider>
           <QueryProvider>
             <AuthProvider>
-              {children}
-              <Toaster position="top-right" />
+              <IdleLockProvider>
+                {children}
+                <Toaster position="top-right" />
+              </IdleLockProvider>
             </AuthProvider>
           </QueryProvider>
         </StoreProvider>

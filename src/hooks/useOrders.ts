@@ -60,6 +60,19 @@ export function useUpdateOrder() {
   });
 }
 
+export interface PaginatedMeta {
+  total: number;
+  filteredTotal: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
+export interface PaginatedResult<T> {
+  data: T[];
+  meta: PaginatedMeta;
+}
+
 export function useOrders(filters?: {
   status?: string;
   type?: string;
@@ -69,8 +82,8 @@ export function useOrders(filters?: {
   return useQuery({
     queryKey: ["orders", filters],
     queryFn: async () => {
-      const response = await axiosInstance.get("/order", { params: filters });
-      return response.data; // Expected format: { data: Order[], total: number, page: number, lastPage: number }
+      const response = await axiosInstance.get<PaginatedResult<any>>("/order", { params: filters });
+      return response.data;
     },
     refetchInterval: 100000, // Poll every 100s for real-time KDS/Billing updates
   });
@@ -100,10 +113,10 @@ export function useOrderHistory(filters?: {
   return useQuery({
     queryKey: ["orderHistory", filters],
     queryFn: async () => {
-      const response = await axiosInstance.get("/order/history", {
+      const response = await axiosInstance.get<PaginatedResult<any>>("/order/history", {
         params: filters,
       });
-      return response.data; // Expected format: { orders: Order[], totalCount: number, ... }
+      return response.data;
     },
     staleTime: 30000,
   });

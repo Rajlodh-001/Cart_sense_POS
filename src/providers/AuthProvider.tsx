@@ -19,16 +19,18 @@ export default function AuthProvider({
       
       // Temporary: Auto-fetch first device for location to bind to session
       import("@/lib/axios").then((module) => {
-        module.default.get("/location/devices").then((res) => {
+        module.default.get("/devices").then((res) => {
           const deviceId = res.data[0]?.id || null;
           dispatch(
             setUser({
               id: user.id,
               name: user.name,
               email: user.email,
-              role: user.role,
-              avatar: (user as Record<string, string>).image || (user as Record<string, string>).avatar || null,
+              role: user.role as unknown as Record<string, unknown>,
+              permissions: user.role?.permissions?.map(p => `${p.resource}:${p.action}`) || [],
+              avatar: (user as any).image || (user as any).avatar || null,
               deviceId: deviceId,
+              tenantDetail: user.tenantDetail || null,
             }),
           );
         }).catch(err => {

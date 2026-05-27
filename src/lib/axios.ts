@@ -16,7 +16,9 @@ const axiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
-      const token = localStorage.getItem("pos_token");
+      const sessionToken = localStorage.getItem("pos_session_token");
+      const terminalToken = localStorage.getItem("pos_terminal_token");
+      const token = sessionToken || terminalToken;
       if (token) {
         config.headers.Authorization = `Bearer ${token}`;
       }
@@ -32,7 +34,7 @@ axiosInstance.interceptors.response.use(
   (error) => {
     if (error.response && error.response.status === 401) {
       if (typeof window !== "undefined") {
-        localStorage.removeItem("pos_token");
+        localStorage.removeItem("pos_session_token");
         if (!window.location.pathname.includes("/auth/login")) {
           const currentPath = window.location.pathname + window.location.search;
           window.location.href = `/auth/login?next=${encodeURIComponent(currentPath)}`;

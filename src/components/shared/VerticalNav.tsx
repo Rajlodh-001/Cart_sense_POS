@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { ChevronLeft, ChevronRight, Search, LucideIcon } from "lucide-react";
 
 export interface NavItem {
@@ -20,6 +20,8 @@ interface VerticalNavProps {
 
 const VerticalNav: React.FC<VerticalNavProps> = ({ items }) => {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const currentTab = searchParams.get("tab")?.toLowerCase();
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
@@ -63,7 +65,11 @@ const VerticalNav: React.FC<VerticalNavProps> = ({ items }) => {
         {/* Navigation Menu */}
         <nav className="space-y-4">
           {items.map((item) => {
-            const isActive = pathname?.startsWith(item.href);
+            const tabParamVal = item.href.split("?tab=")[1];
+            const hrefPath = item.href.split("?")[0];
+            const isActive = tabParamVal 
+              ? (pathname === hrefPath && (currentTab === tabParamVal.toLowerCase() || (!currentTab && (tabParamVal.toLowerCase() === "products" || tabParamVal.toLowerCase() === "users"))))
+              : (pathname === hrefPath || pathname?.startsWith(hrefPath + "/"));
             const Icon = item.icon;
 
             return (

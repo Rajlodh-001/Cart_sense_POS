@@ -24,6 +24,10 @@ export interface User {
   roleData?: {
     id: string;
     name: string;
+    primaryColor?: string;
+    secondaryColor?: string;
+    iconName?: string;
+    groupBy?: string;
   };
   isActive: boolean;
   image?: string;
@@ -130,8 +134,8 @@ export const useRoles = (search?: string) => {
   return useQuery({
     queryKey: ["roles", search],
     queryFn: async () => {
-      const res = await axiosInstance.get<RoleData[]>("/roles", { params: { search } });
-      return res.data;
+      const res = await axiosInstance.get<{ data: RoleData[] }>("/roles", { params: { search } });
+      return res.data.data;
     },
   });
 };
@@ -199,8 +203,8 @@ export const usePermissions = (search?: string) => {
   return useQuery({
     queryKey: ["permissions", search],
     queryFn: async () => {
-      const res = await axiosInstance.get<Permission[]>("/roles/permissions", { params: { search } });
-      return res.data;
+      const res = await axiosInstance.get<{ data: Permission[] }>("/roles/permissions", { params: { search } });
+      return res.data.data;
     },
   });
 };

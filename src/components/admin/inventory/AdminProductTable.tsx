@@ -2,6 +2,7 @@
 import React from "react";
 import { Product, useDeleteProduct } from "@/hooks/useProducts";
 import ConfirmModal from "@/components/shared/ConfirmModal";
+import { usePermissions } from "@/hooks/usePermissions";
 import toast from "react-hot-toast";
 import { 
   Tag, 
@@ -25,6 +26,10 @@ const AdminProductTable: React.FC<AdminProductTableProps> = ({
   isLoading,
 }) => {
   const deleteMutation = useDeleteProduct();
+  const { hasPermission } = usePermissions();
+  const canUpdate = hasPermission("product", "UPDATE");
+  const canDelete = hasPermission("product", "DELETE");
+
   const [confirmDelete, setConfirmDelete] = React.useState<{ id: string; name: string } | null>(null);
 
   const handleDelete = (id: string, name: string) => {
@@ -175,14 +180,17 @@ const AdminProductTable: React.FC<AdminProductTableProps> = ({
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => onEdit(product)}
-                        className="p-2.5 bg-white text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all border border-gray-100 hover:border-blue-100 flex items-center justify-center"
+                        disabled={!canUpdate}
+                        className="p-2.5 bg-white text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-xl transition-all border border-gray-100 hover:border-blue-100 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-400 disabled:hover:border-gray-100"
+                        title={canUpdate ? "Edit Product" : "Requires update permission"}
                       >
                         <Edit size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(product.id, product.name)}
-                        disabled={deleteMutation.isPending}
-                        className="p-2.5 bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-gray-100 hover:border-red-100 flex items-center justify-center disabled:opacity-50"
+                        disabled={!canDelete || deleteMutation.isPending}
+                        className="p-2.5 bg-white text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-xl transition-all border border-gray-100 hover:border-red-100 flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-white disabled:hover:text-gray-400 disabled:hover:border-gray-100"
+                        title={canDelete ? "Delete Product" : "Requires delete permission"}
                       >
                         <Trash2 size={16} />
                       </button>

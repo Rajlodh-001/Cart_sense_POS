@@ -4,7 +4,7 @@ import React, { useState, useCallback, useEffect, useMemo } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import MenuNavbar from "./MenuNavbar";
 import MenuPage from "./MenuPage";
-import TopBar from "@/components/shared/TopBar";
+import UnifiedTopBar from "@/components/shared/UnifiedTopBar";
 import SearchBox from "./SearchBox";
 import { categories as staticCategories } from "../../../lib/TempData";
 import {
@@ -13,11 +13,17 @@ import {
   Product,
 } from "@/hooks/useProducts";
 import { useCategories, Category } from "@/hooks/useCategories";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 
 const ItemsContainer = () => {
   const { data: dynamicCategories, isLoading: isCategoriesLoading } =
     useCategories();
   const [search, setSearch] = useState("");
+  
+  useKeyboardShortcuts({
+    onClearSearch: () => setSearch(""),
+  });
+
   const [activeCategoryIds, setActiveCategoryIds] = useState<
     (number | string)[]
   >([]);
@@ -105,7 +111,18 @@ const ItemsContainer = () => {
 
   return (
     <div className="h-full bg-[#f0f2f5] w-full flex flex-col p-2 sm:p-4 overflow-hidden">
-      <TopBar />
+      <UnifiedTopBar 
+        title="Terminal Point of Sale" 
+        variant="pos"
+        rightActions={
+          <button className="flex items-center space-x-1.5 md:space-x-2 bg-red-50 text-red-500 px-2 md:px-4 py-1.5 md:py-2 rounded-xl font-bold hover:bg-red-100 transition-colors border border-red-100 flex-shrink-0 group active:scale-95">
+            <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse"></span>
+            <span className="hidden lg:inline text-[11px] md:text-xs lg:text-sm font-extrabold ">
+              Close Order
+            </span>
+          </button>
+        }
+      />
 
       {/* Search + Category Navigation */}
       <SearchBox searchQuery={search} onSearchChange={setSearch} />

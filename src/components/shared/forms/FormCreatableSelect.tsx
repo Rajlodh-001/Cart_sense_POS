@@ -66,7 +66,7 @@ export const FormCreatableSelect: React.FC<FormCreatableSelectProps> = ({
   };
 
   return (
-    <div className="flex flex-col gap-2.5 group/field w-full animate-in fade-in duration-500" ref={containerRef}>
+    <div className={`flex flex-col gap-2.5 group/field w-full animate-in fade-in duration-500 transition-all ${isOpen ? "relative z-50" : "relative"}`} ref={containerRef}>
       {/* Label Area */}
       <div className="flex items-center justify-between px-2">
         <label className="text-[11px] font-black text-gray-900 uppercase tracking-widest flex items-center gap-2 group-focus-within/field:text-purple-600 transition-colors">

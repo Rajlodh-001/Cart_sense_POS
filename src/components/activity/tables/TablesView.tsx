@@ -3,7 +3,7 @@ import React, { useState } from "react";
 import { Plus, Edit2, Search, Filter, X, Clock, User, ChevronRight, CheckCircle2, Timer, UtensilsCrossed } from "lucide-react";
 import Portal from "../../shared/Portal";
 
-import { useTables, Table } from "@/hooks/useTables";
+import { useTables, Table, OrderItem } from "@/hooks/useTables";
 import { useUpdateOrder } from "@/hooks/useOrders";
 import PaymentModal from "@/components/activity/PaymentModal";
 import ConnectionError from "@/components/shared/ConnectionError";
@@ -49,7 +49,7 @@ const TablesView = () => {
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6 gap-4">
           {sectionTables.map((table) => {
             // Check status via derived active orders or backend truth
-            const hasOrder = table.orders && table.orders.length > 0;
+            const hasOrder = table.orders && table.orders.length > 0 && (table.orders[0].status === "PENDING" || table.status === "OCCUPIED" || table.status === "DIRTY");
             const hasReservation =
               table.reservations && table.reservations.length > 0;
 
@@ -64,7 +64,7 @@ const TablesView = () => {
             let DisplayName = "";
 
             if (hasOrder) {
-              guests = 0; // The active Order usually has seat count, but we didn't fetch it explicitly in table query. Let's show "Occupied"
+              guests = table.orders![0].seatCount || 0;
               timeStr = new Date(table.orders![0].orderTime)
                 .toLocaleString("en-US", { hour: "2-digit", minute: "2-digit" })
                 .replace(",", "");
@@ -221,11 +221,11 @@ const TablesView = () => {
           items={selectedTable.orders[0].items || []}
           initialDetails={{
             customer: selectedTable.orders[0].customer as any,
-            phone: selectedTable.orders[0].customer?.phone,
-            orderNote: selectedTable.orders[0].notes,
+            phone: selectedTable.orders[0].customer?.phone || undefined,
+            orderNote: selectedTable.orders[0].notes || undefined,
             orderType: selectedTable.orders[0].orderType?.toLowerCase() as any,
             tableId: selectedTable.id,
-            seatCount: selectedTable.orders[0].seatCount,
+            seatCount: selectedTable.orders[0].seatCount || undefined,
           }}
           showPayLater={false}
           onClose={() => setShowBillModal(false)}
@@ -248,7 +248,7 @@ const TableDetailModal = ({
 }) => {
   if (!table) return null;
 
-  const activeOrder = table.orders?.[0];
+  const activeOrder = (table.status === "OCCUPIED" || table.status === "DIRTY") ? table.orders?.[0] : null;
   const items = activeOrder?.items || [];
 
   return (
@@ -313,7 +313,7 @@ const TableDetailModal = ({
                   <User size={10} className="text-blue-500" /> Seated Guests
                 </p>
                 <p className="text-lg font-bold text-gray-900">
-                  {table.capacity} Persons
+                  {activeOrder ? activeOrder.seatCount : table.capacity} Persons
                 </p>
               </div>
               <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm">
@@ -338,7 +338,7 @@ const TableDetailModal = ({
               </div>
             ) : (
               <div className="space-y-4">
-                {items.map((item, idx) => (
+                {items.map((item: OrderItem, idx: number) => (
                   <div
                     key={idx}
                     className="flex justify-between items-center group/item"
@@ -389,9 +389,9 @@ const TableDetailModal = ({
             </button>
             <button
               onClick={onBilling}
-              disabled={!activeOrder}
+              disabled={!activeOrder || activeOrder.status === "COMPLETED"}
               className={`flex-[1.5] py-4 rounded-2xl font-black shadow-xl transition-all active:scale-95 flex items-center justify-center gap-2 group/btn ${
-                activeOrder 
+                activeOrder && activeOrder.status !== "COMPLETED"
                   ? "bg-blue-600 text-white shadow-blue-100 hover:bg-blue-700" 
                   : "bg-gray-200 text-gray-400 cursor-not-allowed shadow-none"
               }`}

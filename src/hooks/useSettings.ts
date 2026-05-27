@@ -73,3 +73,29 @@ export const useAllLocations = () => {
     },
   });
 };
+
+export const useCreateLocation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (data: { name: string; locationSkuId: string; address?: string; phone?: string; email?: string }) => {
+      const res = await axiosInstance.post("/location", data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["locations", "all"] });
+    },
+  });
+};
+
+export const useUpdateAnyLocation = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, data }: { id: string; data: Partial<LocationSettings> }) => {
+      const res = await axiosInstance.patch(`/location/${id}`, data);
+      return res.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["locations", "all"] });
+    },
+  });
+};

@@ -3,12 +3,36 @@ import axiosInstance from "@/lib/axios";
 import { useRouter } from "next/navigation";
 
 // --- Types ---
+export interface Permission {
+  resource: string;
+  action: string;
+}
+
+export interface Role {
+  id: string;
+  name: string;
+  permissions?: Permission[];
+}
+
+export interface TenantDetail {
+  org: {
+    id: string;
+    name: string;
+  };
+  location: {
+    id: string;
+    locationSkuId: string;
+    name: string;
+  };
+}
+
 export interface User {
   id: string;
   name: string;
   email: string;
-  role: string;
+  role: Role | null;
   isActive: boolean;
+  tenantDetail?: TenantDetail | null;
 }
 
 interface AuthResponse {
@@ -42,7 +66,11 @@ export function useSessionStatus() {
     queryKey: ["sessionStatus"],
     queryFn: async () => {
       // If no token exists, we don't even try to fetch status
-      if (typeof window !== "undefined" && !localStorage.getItem("pos_token")) {
+      if (
+        typeof window !== "undefined" &&
+        !localStorage.getItem("pos_session_token") &&
+        !localStorage.getItem("pos_terminal_token")
+      ) {
         return {
           isActivated: false,
           locationId: null,
@@ -71,7 +99,7 @@ export function useUser() {
       return response.data.user;
     },
     retry: false,
-    enabled: typeof window !== "undefined" && !!localStorage.getItem("pos_token"),
+    enabled: typeof window !== "undefined" && !!localStorage.getItem("pos_session_token"),
     staleTime: 1000 * 60 * 5,
   });
 }
@@ -85,7 +113,7 @@ export function useActivateStore() {
   return useMutation({
     mutationFn: async (params: {
       organization: string;
-      locationId: string;
+      locationSkuId: string;
       password?: string;
     }) => {
       const response = await axiosInstance.post<AuthResponse>("/auth/activate-store", params);
@@ -93,7 +121,7 @@ export function useActivateStore() {
     },
     onSuccess: (data) => {
       if (data.accessToken) {
-        localStorage.setItem("pos_token", data.accessToken);
+        localStorage.setItem("pos_terminal_token", data.accessToken);
       }
       // Refresh status to transition the UI to User Login
       queryClient.invalidateQueries({ queryKey: ["sessionStatus"] });
@@ -125,7 +153,7 @@ export function useLogin() {
     },
     onSuccess: (data) => {
       if (data.accessToken) {
-        localStorage.setItem("pos_token", data.accessToken);
+        localStorage.setItem("pos_session_token", data.accessToken);
       }
       queryClient.setQueryData(["authUser"], data.user);
       queryClient.invalidateQueries({ queryKey: ["sessionStatus"] });
@@ -148,14 +176,33 @@ export function useLogout() {
       await axiosInstance.post("/auth/logout");
     },
     onSuccess: () => {
-      localStorage.removeItem("pos_token");
+      localStorage.removeItem("pos_session_token");
       queryClient.clear();
       router.push("/auth/login");
     },
     onError: () => {
-      localStorage.removeItem("pos_token");
+      localStorage.removeItem("pos_session_token");
       queryClient.clear();
       router.push("/auth/login");
     },
   });
 }
+
+export interface Device {
+  id: string;
+  name: string;
+  deviceType: string | null;
+  slug: string | null;
+}
+
+export function useDevices() {
+  return useQuery({
+    queryKey: ["devices"],
+    queryFn: async () => {
+      const response = await axiosInstance.get<Device[]>("/devices");
+      return response.data;
+    },
+    enabled: typeof window !== "undefined" && !!localStorage.getItem("pos_terminal_token"),
+  });
+}
+

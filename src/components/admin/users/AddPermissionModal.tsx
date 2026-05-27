@@ -2,8 +2,8 @@
 import React, { useEffect, useState } from "react";
 import { X, ShieldCheck, Hash, Zap, Layout, Save, Info, Trash2, Loader2, CheckCircle2, Layers } from "lucide-react";
 import LucideIcon from "@/components/shared/LucideIcon";
-import { Permission, useCreatePermission, useUpdatePermission } from "@/hooks/useUsers";
-import { FormInput, FormSelect } from "@/components/shared/forms";
+import { Permission, useCreatePermission, useUpdatePermission, usePermissionGroups } from "@/hooks/useUsers";
+import { FormInput, FormSelect, FormCreatableSelect } from "@/components/shared/forms";
 import { FormLayout } from "@/components/shared/forms/FormLayout";
 import toast from "react-hot-toast";
 
@@ -15,6 +15,7 @@ interface AddPermissionModalProps {
 const AddPermissionModal: React.FC<AddPermissionModalProps> = ({ permission, onClose }) => {
   const createMutation = useCreatePermission();
   const updateMutation = useUpdatePermission();
+  const { data: permissionGroups } = usePermissionGroups();
 
   const [formData, setFormData] = useState({
     name: "",
@@ -187,11 +188,12 @@ const AddPermissionModal: React.FC<AddPermissionModalProps> = ({ permission, onC
                 placeholder="e.g. Zap, Shield, User"
                 description="Lucide icon identifier."
               />
-              <FormInput 
+              <FormCreatableSelect 
                 label="Group By Label"
                 icon={Layers}
                 value={formData.groupBy}
-                onChange={(e) => setFormData({ ...formData, groupBy: e.target.value })}
+                onChange={(val) => setFormData({ ...formData, groupBy: val })}
+                options={permissionGroups?.map(g => ({ value: g, label: g })) || []}
                 placeholder="e.g. ANALYTICS Domain"
                 description="Used for section headers."
               />

@@ -1,5 +1,17 @@
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 
+export interface TenantDetail {
+  org: {
+    id: string;
+    name: string;
+  };
+  location: {
+    id: string;
+    locationSkuId: string;
+    name: string;
+  };
+}
+
 export interface UserState {
   id: string | null;
   name: string | null;
@@ -11,6 +23,7 @@ export interface UserState {
   preferences: Record<string, unknown> | null;
   isAuthenticated: boolean;
   deviceId: string | null;
+  tenantDetail: TenantDetail | null;
 }
 
 const initialState: UserState = {
@@ -24,6 +37,7 @@ const initialState: UserState = {
   preferences: null,
   isAuthenticated: false,
   deviceId: null,
+  tenantDetail: null,
 };
 
 const userSlice = createSlice({
@@ -43,6 +57,7 @@ const userSlice = createSlice({
       if (action.payload.permissions) state.permissions = action.payload.permissions;
       if (action.payload.preferences) state.preferences = action.payload.preferences;
       if (action.payload.deviceId) state.deviceId = action.payload.deviceId;
+      if (action.payload.tenantDetail) state.tenantDetail = action.payload.tenantDetail;
       state.isAuthenticated = true;
     },
     clearUser: (state) => {
@@ -56,6 +71,7 @@ const userSlice = createSlice({
       state.preferences = null;
       state.isAuthenticated = false;
       state.deviceId = null;
+      state.tenantDetail = null;
     },
   },
 });

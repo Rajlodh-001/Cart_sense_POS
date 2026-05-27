@@ -157,10 +157,12 @@ const OrderContainer = () => {
         "timed-order": "TAKEAWAY", // Assuming timed-order resolves as takeaway for now
       };
 
+      const storedDeviceId = typeof window !== "undefined" ? localStorage.getItem("pos_device_id") : null;
+
       const payload: CreateOrderPayload = {
         orderNo: Math.floor(Math.random() * 10000), // temp fallback structure
         userId: user.id,
-        deviceId: user.deviceId || undefined,
+        deviceId: storedDeviceId || user.deviceId || undefined,
         customerId: details.customerId || undefined,
         tableId: details.tableId || orderInfo.tableId || undefined,
         seatCount: details.seatCount || undefined,
@@ -385,6 +387,7 @@ const OrderContainer = () => {
         <div className="flex space-x-3 mb-3">
           {!showPromoInput ? (
             <button
+              id="pos-promo-btn"
               onClick={() => setShowPromoInput(true)}
               className="flex-1 flex items-center justify-between px-4 py-2.5 bg-green-50 border border-green-200 rounded-xl text-green-700 font-medium hover:bg-green-100 transition-colors"
             >
@@ -421,7 +424,7 @@ const OrderContainer = () => {
                       });
                       if (res.valid) {
                         toast.success(
-                          `Discount ${res.discountAmount} applied!`,
+                           `Discount ${res.discountAmount} applied!`,
                           { id: "verify-coupon" },
                         );
                         dispatch(setDiscountAmount(res.discountAmount));
@@ -443,13 +446,14 @@ const OrderContainer = () => {
             </div>
           )}
 
-          <button className="flex-1 flex items-center justify-center px-4 py-2.5 bg-white border-2 border-blue-100 rounded-xl text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors">
+          <button id="pos-qris-btn" className="flex-1 flex items-center justify-center px-4 py-2.5 bg-white border-2 border-blue-100 rounded-xl text-blue-600 font-bold text-sm hover:bg-blue-50 transition-colors">
             QRIS
           </button>
         </div>
 
         {/* Main CTA: Place Order */}
         <button
+          id="pos-place-order-btn"
           onClick={handlePaymentProcess}
           disabled={!hasItems}
           className={`w-full py-3.5 rounded-xl font-bold text-base shadow-lg transition-all flex justify-center items-center ${

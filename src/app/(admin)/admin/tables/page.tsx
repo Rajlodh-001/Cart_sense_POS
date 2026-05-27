@@ -4,6 +4,7 @@ import { Plus, Users, MapPin, Edit3, RefreshCw, LayoutGrid, Layers } from "lucid
 import { useTables, useZones, Table, Zone } from "@/hooks/useTables";
 import TableFormModal from "@/components/admin/TableFormModal";
 import ZoneFormModal from "@/components/admin/ZoneFormModal";
+import AdminPageLayout from "@/components/shared/AdminPageLayout";
 
 export default function TablesPage() {
   const { data: tables, isLoading, isError, refetch } = useTables();
@@ -142,7 +143,7 @@ export default function TablesPage() {
   };
 
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700 pb-20">
+    <AdminPageLayout>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
           <h2 className="text-4xl font-black text-gray-900 tracking-tight">Tables & Seating</h2>
@@ -217,6 +218,6 @@ export default function TablesPage() {
 
       <TableFormModal isOpen={isPanelOpen} table={selectedTable} onClose={() => { setIsPanelOpen(false); setSelectedTable(null); }} />
       <ZoneFormModal isOpen={isZoneModalOpen} zone={editingZone} onClose={() => { setIsZoneModalOpen(false); setEditingZone(null); }} />
-    </div>
+    </AdminPageLayout>
   );
 }

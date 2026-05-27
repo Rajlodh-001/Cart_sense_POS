@@ -11,6 +11,33 @@ export interface Zone {
   groupBy?: string;
 }
 
+export interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  total: number;
+  status: "RECEIVED" | "PREPARING" | "READY" | "SERVED";
+  discount?: number;
+  note?: string | null;
+}
+
+export interface Order {
+  id: string;
+  status: "PENDING" | "COMPLETED" | "CANCELLED";
+  orderTime: string;
+  seatCount?: number | null;
+  notes?: string | null;
+  orderType: "DINE_IN" | "DELIVERY" | "TAKEAWAY" | "SCHEDULED";
+  totalAmount: number;
+  customer?: {
+    id: string;
+    name: string;
+    phone?: string | null;
+  } | null;
+  items?: OrderItem[];
+}
+
 export interface Table {
   id: string;
   name: string;
@@ -20,8 +47,8 @@ export interface Table {
   zone: Zone;
   status: "AVAILABLE" | "OCCUPIED" | "RESERVED" | "DIRTY";
   isActive: boolean;
-  orders?: any[];
-  reservations?: any[];
+  orders?: Order[];
+  reservations?: any[]; // Keep any or define Reservation type similarly if needed
   primaryColor?: string;
   secondaryColor?: string;
   iconName?: string;

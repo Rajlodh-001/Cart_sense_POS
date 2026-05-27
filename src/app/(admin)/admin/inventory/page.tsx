@@ -1,6 +1,8 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Package, Plus, Layers, Sliders, Search, Trash2, Edit } from "lucide-react";
+import { useSearchParams } from "next/navigation";
+import { usePermissions } from "@/hooks/usePermissions";
 import { useInitialProducts, Product } from "@/hooks/useProducts";
 import { useModifiers } from "@/hooks/useModifiers";
 import { useCategories, useDeleteCategory, Category } from "@/hooks/useCategories";
@@ -12,11 +14,32 @@ import AddModifierModal from "@/components/admin/inventory/AddModifierModal";
 import ConfirmModal from "@/components/shared/ConfirmModal";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import toast from "react-hot-toast";
+import VerticalNav from "@/components/shared/VerticalNav";
+import AdminPageLayout from "@/components/shared/AdminPageLayout";
 
 type TabId = "products" | "categories" | "modifiers";
 
 export default function InventoryPage() {
+  const searchParams = useSearchParams();
+  const { hasPermission } = usePermissions();
+  const canCreateProduct = hasPermission("product", "CREATE");
+
+  const canCreateCategory = hasPermission("category", "CREATE");
+  const canUpdateCategory = hasPermission("category", "UPDATE");
+  const canDeleteCategory = hasPermission("category", "DELETE");
+
+  const canCreateModifier = hasPermission("modifier", "CREATE");
+  const canUpdateModifier = hasPermission("modifier", "UPDATE");
+
+  const tabParam = searchParams.get("tab") as TabId;
   const [activeTab, setActiveTab] = useState<TabId>("products");
+
+  useEffect(() => {
+    if (tabParam && ["products", "categories", "modifiers"].includes(tabParam)) {
+      setActiveTab(tabParam);
+    }
+  }, [tabParam]);
+
   const [isProductModalOpen, setIsProductModalOpen] = useState(false);
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isModifierModalOpen, setIsModifierModalOpen] = useState(false);
@@ -67,74 +90,60 @@ export default function InventoryPage() {
     } catch (error) {}
   };
 
+  const inventoryNavItems = [
+    { id: "products", label: "Products Catalog", href: "/admin/inventory?tab=products", icon: Package },
+    { id: "categories", label: "Categories", href: "/admin/inventory?tab=categories", icon: Layers },
+    { id: "modifiers", label: "Modifiers", href: "/admin/inventory?tab=modifiers", icon: Sliders },
+  ];
+
   return (
-    <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
-      {/* Page Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
-        <div>
-          <h2 className="text-4xl font-black text-gray-900 tracking-tight">Inventory</h2>
-          <p className="text-gray-500 font-medium mt-1 text-sm">Product catalog, categories, and customization options.</p>
+    <AdminPageLayout sidebar={<VerticalNav items={inventoryNavItems} />}>
+        {/* Page Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 pb-2">
+          <div>
+            <h2 className="text-4xl font-black text-gray-900 tracking-tight">Inventory</h2>
+            <p className="text-gray-500 font-medium mt-1 text-sm">Product catalog, categories, and customization options.</p>
+          </div>
+          
+          <div className="flex items-center gap-3">
+            {activeTab === "products" && (
+              <button 
+                onClick={() => { setEditingProduct(null); setIsProductModalOpen(true); }}
+                disabled={!canCreateProduct}
+                className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-[1.5rem] font-bold shadow-xl shadow-gray-200 hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
+                title={canCreateProduct ? "Add Product" : "Requires create permission"}
+              >
+                <Plus size={20} />
+                <span>Add Product</span>
+              </button>
+            )}
+            {activeTab === "categories" && (
+              <button 
+                onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }}
+                disabled={!canCreateCategory}
+                className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-[1.5rem] font-bold shadow-xl shadow-gray-200 hover:bg-emerald-600 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
+                title={canCreateCategory ? "Add Category" : "Requires create permission"}
+              >
+                <Plus size={20} />
+                <span>Add Category</span>
+              </button>
+            )}
+            {activeTab === "modifiers" && (
+              <button 
+                onClick={() => { setEditingModifier(null); setIsModifierModalOpen(true); }}
+                disabled={!canCreateModifier}
+                className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-[1.5rem] font-bold shadow-xl shadow-gray-200 hover:bg-blue-600 transition-all active:scale-95 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-900"
+                title={canCreateModifier ? "Add Modifier" : "Requires create permission"}
+              >
+                <Plus size={20} />
+                <span>Add Modifier</span>
+              </button>
+            )}
+          </div>
         </div>
-        
-        <div className="flex items-center gap-3">
-          {activeTab === "products" && (
-            <button 
-              onClick={() => { setEditingProduct(null); setIsProductModalOpen(true); }}
-              className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-[1.5rem] font-bold shadow-xl shadow-gray-200 hover:bg-blue-600 transition-all active:scale-95"
-            >
-              <Plus size={20} />
-              <span>Add Product</span>
-            </button>
-          )}
-          {activeTab === "categories" && (
-            <button 
-              onClick={() => { setEditingCategory(null); setIsCategoryModalOpen(true); }}
-              className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-[1.5rem] font-bold shadow-xl shadow-gray-200 hover:bg-emerald-600 transition-all active:scale-95"
-            >
-              <Plus size={20} />
-              <span>Add Category</span>
-            </button>
-          )}
-          {activeTab === "modifiers" && (
-            <button 
-              onClick={() => { setEditingModifier(null); setIsModifierModalOpen(true); }}
-              className="flex items-center gap-2 px-6 py-4 bg-gray-900 text-white rounded-[1.5rem] font-bold shadow-xl shadow-gray-200 hover:bg-blue-600 transition-all active:scale-95"
-            >
-              <Plus size={20} />
-              <span>Add Modifier</span>
-            </button>
-          )}
-        </div>
-      </div>
 
-      {/* Tabs Navigation */}
-      <div className="flex items-center gap-2 p-1.5 bg-gray-100/80 rounded-3xl w-fit">
-        {[
-          { id: "products", label: "Products", icon: Package },
-          { id: "categories", label: "Categories", icon: Layers },
-          { id: "modifiers", label: "Modifiers", icon: Sliders },
-        ].map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          return (
-            <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id as TabId)}
-              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-bold transition-all
-                ${isActive 
-                  ? "bg-white text-gray-900 shadow-sm scale-[1.02]" 
-                  : "text-gray-500 hover:text-gray-900"}
-              `}
-            >
-              <Icon size={18} className={isActive ? "text-blue-500" : "text-gray-400"} />
-              <span className="text-sm">{tab.label}</span>
-            </button>
-          );
-        })}
-      </div>
-
-      {/* Tab Content */}
-      <div className="min-h-[500px]">
+        {/* Tab Content */}
+        <div className="min-h-[500px]">
         {activeTab === "products" && (
           <div className="space-y-6">
              <div className="flex items-center justify-between px-2">
@@ -175,13 +184,17 @@ export default function InventoryPage() {
                     <div className="flex items-center gap-2">
                        <button 
                          onClick={() => handleEditCategory(category)}
-                         className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-500 transition-all border border-transparent hover:border-emerald-100"
+                         disabled={!canUpdateCategory}
+                         className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-emerald-50 hover:text-emerald-500 transition-all border border-transparent hover:border-emerald-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-50 disabled:hover:text-gray-400 disabled:hover:border-transparent"
+                         title={canUpdateCategory ? "Edit Category" : "Requires update permission"}
                        >
                          <Edit size={16} />
                        </button>
                        <button 
                          onClick={() => handleDeleteCategory(category.id, category.name)}
-                         className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all border border-transparent hover:border-red-100"
+                         disabled={!canDeleteCategory}
+                         className="w-10 h-10 flex items-center justify-center rounded-full bg-gray-50 text-gray-400 hover:bg-red-50 hover:text-red-500 transition-all border border-transparent hover:border-red-100 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-gray-50 disabled:hover:text-gray-400 disabled:hover:border-transparent"
+                         title={canDeleteCategory ? "Delete Category" : "Requires delete permission"}
                        >
                          <Trash2 size={16} />
                        </button>
@@ -237,7 +250,9 @@ export default function InventoryPage() {
                            </div>
                            <button 
                              onClick={() => handleEditModifier(mod)}
-                             className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all border border-blue-100/50"
+                             disabled={!canUpdateModifier}
+                             className="px-4 py-2 bg-blue-50 text-blue-600 rounded-full text-[10px] font-black uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all border border-blue-100/50 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-blue-50 disabled:hover:text-blue-600"
+                             title={canUpdateModifier ? "Manage Modifier" : "Requires update permission"}
                            >
                              Manage
                            </button>
@@ -339,6 +354,6 @@ export default function InventoryPage() {
         confirmText="Yes, Delete"
         isLoading={deleteCategoryMutation.isPending}
       />
-    </div>
+    </AdminPageLayout>
   );
 }

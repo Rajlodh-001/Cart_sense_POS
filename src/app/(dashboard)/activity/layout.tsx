@@ -1,7 +1,7 @@
 "use client";
 
 import VerticalNav, { NavItem } from "@/components/shared/VerticalNav";
-import TopBar from "@/components/shared/TopBar";
+import UnifiedTopBar from "@/components/shared/UnifiedTopBar";
 import { LayoutDashboard, Table, History } from "lucide-react";
 
 const activityNavItems: NavItem[] = [
@@ -28,7 +28,7 @@ export default function ActivityLayout({
   return (
     <div className="flex flex-col h-screen w-full bg-[#F8F9FB] overflow-hidden">
       <div className="p-4 pb-0 z-[10]">
-        <TopBar />
+        <UnifiedTopBar title="Operational Activity" variant="pos" />
       </div>
 
       <div className="flex flex-1 overflow-hidden">

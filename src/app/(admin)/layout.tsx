@@ -1,60 +1,67 @@
 "use client";
-import React, { useState } from "react";
-import AdminSidebar from "@/components/admin/AdminSidebar";
-import { Menu } from "lucide-react";
+import React, { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useSessionStatus } from "@/hooks/useAuth";
+import { SidebarProvider, useSidebar } from "@/context/SidebarContext";
+import GlobalSidebar from "@/components/shared/GlobalSidebar";
+import UnifiedTopBar from "@/components/shared/UnifiedTopBar";
+import { Bell, Loader2 } from "lucide-react";
 
-export default function AdminLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+function AdminLayoutContent({ children }: { children: React.ReactNode }) {
+  const router = useRouter();
+  const { data: session, isLoading, isError } = useSessionStatus();
+  const { isOpen, setIsOpen, toggle } = useSidebar();
+
+  useEffect(() => {
+    if (!isLoading && !isError) {
+      if (!session?.isActivated || !session?.isLoggedIn) {
+        const currentPath = window.location.pathname + window.location.search;
+        router.replace(`/auth/login?next=${encodeURIComponent(currentPath)}`);
+      }
+    }
+  }, [session, isLoading, isError, router]);
+
+  if (isLoading) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#F8F9FB] gap-4">
+        <Loader2 className="animate-spin text-blue-600" size={40} />
+        <p className="text-gray-500 font-medium">Verifying session...</p>
+      </div>
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="h-screen w-full flex flex-col items-center justify-center bg-[#F8F9FB] gap-4">
+        <p className="text-red-500 font-bold">Failed to verify session</p>
+      </div>
+    );
+  }
+
+  if (!session?.isLoggedIn) return null;
 
   return (
     <div className="flex h-screen w-full bg-[#f8f9fb] text-gray-900 overflow-hidden theme-admin font-sans">
-      {/* Persistent / Responsive Sidebar */}
-      <AdminSidebar 
-        isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
-      />
+      {/* Persistent / Responsive Global Sidebar */}
+      <GlobalSidebar isOpen={isOpen} onClose={() => setIsOpen(false)} />
 
       {/* Content Area */}
-      <main className="flex-1 overflow-hidden relative flex flex-col">
-        {/* Top Header */}
-        <header className="h-20 bg-white border-b border-gray-100 flex items-center justify-between px-6 md:px-10 flex-shrink-0">
-          <div className="flex items-center gap-4">
-            {/* Mobile Menu Toggle */}
-            <button 
-              onClick={() => setIsSidebarOpen(true)}
-              className="lg:hidden p-3 bg-gray-50 text-gray-400 hover:text-primary rounded-xl border border-gray-100 shadow-sm"
-            >
-              <Menu size={20} />
+      <main className="flex-1 overflow-hidden relative flex flex-col p-4 md:p-6 md:pl-0  lg:pl-0 lg:p-8">
+        {/* Unified Top Header */}
+        <UnifiedTopBar
+          variant="admin"
+          title="Flagship Store (HQ)"
+          subtitle="Management Node"
+          onMenuClick={toggle}
+          rightActions={
+            <button className="w-12 h-12 bg-white rounded-2xl flex items-center justify-center text-gray-400 hover:text-blue-600 border border-gray-100 shadow-sm transition-all active:scale-95">
+              <Bell size={18} />
             </button>
-
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gray-900 flex items-center justify-center text-white font-black">
-                CS
-              </div>
-              <div className="hidden sm:block">
-                <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Store Location</p>
-                <h2 className="text-sm font-bold text-gray-900 leading-none">Main Street Bakery (NYC)</h2>
-              </div>
-            </div>
-          </div>
-
-          <div className="flex items-center gap-6">
-            <div className="hidden md:flex flex-col items-end">
-              <p className="text-[10px] font-black text-gray-400 uppercase tracking-widest leading-none mb-1">Active Session</p>
-              <h2 className="text-sm font-bold text-gray-900 leading-none">Admin Mode</h2>
-            </div>
-            <div className="w-10 h-10 rounded-full bg-blue-100 border-2 border-white shadow-sm flex items-center justify-center text-blue-600 font-bold">
-              RL
-            </div>
-          </div>
-        </header>
+          }
+        />
 
         {/* Scrollable Content */}
-        <div className="flex-1 overflow-auto p-6 md:p-10 custom-scrollbar">
+        <div className="flex-1 overflow-hidden">
           {children}
         </div>
       </main>
@@ -67,13 +74,25 @@ export default function AdminLayout({
           background: transparent;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: #E5E7EB;
+          background: #e5e7eb;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: #D1D5DB;
+          background: #d1d5db;
         }
       `}</style>
     </div>
+  );
+}
+
+export default function AdminLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <SidebarProvider>
+      <AdminLayoutContent>{children}</AdminLayoutContent>
+    </SidebarProvider>
   );
 }
